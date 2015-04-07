@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="utf-8">
+  	<title>Onshape BOM</title>
+    
+    <link rel="stylesheet" href="jquery-ui-1.11.1.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="css/devconsole.css">
+
+  </head>
+
+  <body>
+
+    <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
+    <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
+    <script src="js/devconsole.js"></script>
+
+    <div id="top-toolbar">
+       <span id="app-name">Onshape Bill of Materials</span>
+       <div id="context-table">
+          <table>
+             <tr>
+                <th>BOM is for this Model</th>
+             </tr>
+             <td>
+                 <><select id="elt-select"></select>
+                    <span id="elt-id"></span>
+                    <span id="element-refresh">refresh</span>
+                    <span id="element-generate">Generate</span></td>
+             </tr>
+          </table>
+       </div>
+    </div>
+
+    <div id="dev-tabs">
+
+       <div id="dev-container">
+
+          <div id="category-content">
+
+             <div id="apis">
+             </div>
+
+          </div>
+       </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "name": "queryParser",
+  "title": "jQuery Query Parameter Parser",
+  "description": "jQuery plugin for adding query parameter parsing functions.",
+  "keywords": [
+    "query",
+    "parameter",
+    "window.location.search",
+    "parser",
+	"forms",
+	"querystring",
+	"deserialize",
+	"serialize"
+  ],
+  "version": "1.0.1",
+  "author": {
+  	"email": "admin@mattsnider.com",
+    "name": "Matt Snider",
+    "url": "http://www.mattsnider.com"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "bugs": "https://github.com/mattsnider/jquery-plugin-query-parser/issues",
+  "homepage": "https://github.com/mattsnider/jquery-plugin-query-parser",
+  "docs": "https://github.com/mattsnider/jquery-plugin-query-parser",
+  "download": "https://github.com/mattsnider/jquery-plugin-query-parser/archive/master.zip",
+  "dependencies": {
+    "jquery": ">=1.4"
+  }
+}
