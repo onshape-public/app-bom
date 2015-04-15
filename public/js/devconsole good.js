@@ -22,7 +22,6 @@ $(document).ready(function() {
   initCategoryTab();
 });
 
-
 ////////////////////////////////////////////////////////////////
 // return information from Onshape
 // this call is proxied through the application server
@@ -265,6 +264,23 @@ function clientSendKeepalive() {
 // Primary BOM generation function
 //
 function onGenerate() {
+// Create block dom
+  this.block = $('<div class="block"></div>');
+  this.block.attr("bom", "bom")
+  ResultTable = $('<table></table>');
+  ResultTable.addClass('resultTable');
+  this.block.append(ResultTable);
+
+  ResultTable.append("<td><strong>Item Number</strong></td>td>");
+  ResultTable.append("<td><strong>Component Name</strong></td>");
+  ResultTable.append("<td><strong>Count</strong></td>");
+  ResultTable.append("<td><strong>Part Number</strong></td>");
+  ResultTable.append("<td><strong>Revision</strong></td><br>");
+
+
+  $('#apis').append(this.title);
+  $('#apis').append(this.block);
+
 // Add all of the parts of the selected document to the table
   var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
   var params = {name:"generic", method:"GET", path: path};
@@ -282,6 +298,9 @@ function onGenerate() {
           var compSize = 0;
           for (var i = 0; i < obj.length; ++i) {
             var itemName = obj[i].name;
+            var partNumber = obj[i].partNumber;
+            var revision = obj[i].revision;
+
             if (itemName.lastIndexOf("Surface") == -1) {
               // Search through the list of components to find a match
               var found = false;
@@ -297,9 +316,15 @@ function onGenerate() {
 
               // If we didn't find an entry for this, add it at the end.
               if (found != true) {
+                if (partNumber == null)
+                  partNumber = "-";
+                if (revision == null)
+                  revision = "1.0";
                 compArray[compSize] = {
                   Name : itemName,
-                  Count : 1
+                  Count : 1,
+                  PartNumber : partNumber,
+                  Revision : revision
                 }
                 compSize++;
               }
@@ -310,7 +335,9 @@ function onGenerate() {
           for (i =0; i< compSize; ++i) {
             if (compArray[i].Count > 0) {
             //  ResultTable.append("<tr></tr>");
-              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + compArray[i].Name + "</td>" + "<td>" + compArray[i].Count + "</td>" + "<td>" + " " + "</td>" + "</tr>");
+              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + compArray[i].Name + "</td>" +
+                  "<td>" + compArray[i].Count + "</td>" + "<td>" + compArray[i].PartNumber + "</td>" +
+                  "<td>" + compArray[i].Revision + "</td>" + "</tr>");
             }
             // Once we hit a 0 count, that means we are done with our list
             else
@@ -321,6 +348,52 @@ function onGenerate() {
           alert("Problem setting element list");
         }
       });
+
+  // Add an image of the model to the page
+  useExistingLogin();
+  captureImage();
+}
+
+/////////////////////////////////////
+//
+// Capture an image of the model and put it next to the BOM
+//
+function captureImage() {
+
+  var body = {
+    "documentId" : theContext.documentId,
+    "elementId" : theContext.elementId,
+    "workspaceId" : theContext.workspaceId,
+    "viewMatrix" : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+    "outputHeight" : 600,
+    "outputWidth" : 800,
+    "pixelSize" : 0.0003
+  }
+  var callParams = {
+    "name": "generic",
+    "method": "POST",
+    "path": "/api/drawings/shaded",
+    "sessionID": sessionID,
+    "body": JSON.stringify(body, null, 2)
+  }
+
+  $.post("/proxy", callParams)
+      .done(function( data ) {
+        try {
+          var res = JSON.parse(data);
+          if (res.images.length > 0) {
+            var image = res.images[0];
+            ResultTable.append(image);
+          }
+          else
+            ResultTable.append("Image")
+        }
+        catch (err) {
+        }
+      })
+      .fail(function() {
+        alert("Problem with image capture");
+      });
 }
 
 /////////////////////////////////////
@@ -328,23 +401,13 @@ function onGenerate() {
 // Setup the top of the BOM table
 //
 function initCategoryTab() {
+  // Create the header block ...
   this.title = $('<div class="title">' + "" + '</div>');
   this.title.append("<center><strong>Bill of Materials</strong></center>");
   this.title.attr("bom", "bom");
 
-  // create block dom
-  this.block = $('<div class="block"></div>');
-  this.block.attr("bom", "bom")
-  ResultTable = $('<table></table>');
-  ResultTable.addClass('resultTable');
-  this.block.append(ResultTable);
-
-  ResultTable.append("<td><strong>Item Number</strong></td>td>");
-  ResultTable.append("<td><strong>Component Name</strong></td>");
-  ResultTable.append("<td><strong>Count</strong></td>");
-  ResultTable.append("<td><strong>Notes</strong></td><br>");
-
-
-  $('#apis').append(this.title);
-  $('#apis').append(this.block);
+  // Create the header block ...
+  this.title = $('<div class="title">' + "" + '</div>');
+  this.title.append("<center><strong>Bill of Materials</strong></center>");
+  this.title.attr("bom", "bom");
 }

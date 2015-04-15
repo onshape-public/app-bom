@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-var debug = require('debug')('devconsole');
+var debug = require('debug')('devbom');
 var https = require('https');
 var fs = require('fs');
 var app = require('./app');
 var onshape = require('./routes/onshape');
 
-app.set('port', process.env.PORT || 4000);
+app.set('port', process.env.PORT || 4052);
 onshape.setProtocol('https');
 
 var options = {

@@ -7,14 +7,22 @@ body {
   margin: 0;
 }
 table,
+th {
+  font-family: "Open-Sans";
+  font-size: 11pt;
+  color: #333333;
+  align: left;
+  border-bottom: 1px solid #9aa5af;
+  line-height: 36px;
+}
+table,
 th,
 td {
-  border: 1px solid LightGray;
   border-collapse: collapse;
 }
 th,
 td {
-  padding: 5px;
+
 }
 #login,
 #logout {
@@ -81,20 +89,13 @@ td {
 }
 .block,
 .title {
-  width: 100%;
-  padding: 4px;
-  margin-bottom: 4px;
-  font-weight: 400;
-  font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
+
 }
 .block {
-  background-color: AliceBlue;
-  font-size: 12pt;
   padding: 40px;
 }
 .title {
-  background-color: LightBlue;
-  font-size: 14pt;
+
 }
 .classCall, .classResult {
     display: block;
@@ -103,7 +104,7 @@ td {
 }
 .classBody {
     display: block;
-    font-family: monospace;
+    font-family: "Open-Sans";
     white-space: pre;
 }
 .classResult {
