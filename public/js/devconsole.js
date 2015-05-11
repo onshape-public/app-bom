@@ -144,19 +144,21 @@ function refreshContextElements()
           var obj = $.parseJSON(data);
           var id;
           for (var i=0; i<obj.length; ++i) {
-            $("#elt-select")
-                .append(
-                "<option value='" + obj[i].elementId + "'" +
-                (i==0 ? " selected" : "") +
-                ">" +
-                obj[i].name + "</option>"
-            )
-                .change(function() {
-                  id = $("#elt-select option:selected").val();
-                  theContext.elementId = id;
-                  $("#elt-id").text(id);
-                }
-            );
+            if (obj[i].type == 'ASSEMBLY') {
+              $("#elt-select")
+                  .append(
+                  "<option value='" + obj[i].elementId + "'" +
+                  (i == 0 ? " selected" : "") +
+                  ">" +
+                  obj[i].name + "</option>"
+              )
+                  .change(function () {
+                    id = $("#elt-select option:selected").val();
+                    theContext.elementId = id;
+                    $("#elt-id").text(id);
+                  }
+              );
+            }
           }
           theContext.elementId = $("#elt-select option:selected").val();
           $("#elt-id").text(theContext.elementId);
@@ -1672,6 +1674,55 @@ function onGenerate2() {
 //  $('#apis').append(this.title);
   $('#apis').append(this.block);
 
+  // Use the new API to pull component and sub-assembly info
+  var topPath = "/api/models/assembly/definition/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "/element/" + theContext.elementId + "?includeMateFeatures=false";
+  var topParams = {name:"generic", method:"GET", path: topPath};
+  topParams.sessionID = sessionID;
+
+  var comp2Array = {};
+  var comp2Size = 0;
+
+  $.post("/proxy", topParams)
+      .done(function(data) {
+        var compData = JSON.parse(data);
+        // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
+        for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
+          if (compData.rootAssembly.instances[i].type == "Part") {
+            var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
+            var itemName = compData.rootAssembly.instances[i].name;
+            if (bracketIndex > -1)
+              itemName = compData.rootAssembly.instances[i].name.substring(0,bracketIndex-1);
+
+            // Search through the list of components to find a match
+            var found = false;
+            for (var x = 0; x < comp2Size; ++x){
+              if (comp2Array[x].Name == itemName) {
+                comp2Array[x].Count++;
+                found = true;
+
+                // Found a match or a place to put this component, kick out of the search
+                break;
+              }
+            }
+
+            // If we didn't find an entry for this, add it at the end.
+            if (found != true) {
+              comp2Array[comp2Size] = {
+                Name : itemName,
+                Count : 1,
+                PartNumber : 0,
+                Revision : 1,
+              }
+              comp2Size++;
+            }
+          }
+        }
+
+
+      })
+        .fail(function(data) {
+    });
+
 // Add all of the parts of the selected document to the table
   var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
   var params = {name:"generic", method:"GET", path: path};
@@ -1710,6 +1761,19 @@ function onGenerate2() {
                 }
               }
 
+              // Update the master list of information with PartNumber/Revision
+              for (x = 0; x < comp2Size; ++x) {
+                if (comp2Array[x].Name == itemName) {
+                  if (partNumber != null)
+                    comp2Array[x].PartNumber = partNumber;
+                  if (revision != null)
+                    comp2Array[x].Revision = revision;
+
+                  // Found a match or a place to put this component, kick out of the search
+                  break;
+                }
+              }
+
               // If we didn't find an entry for this, add it at the end.
               if (found != true) {
                 if (partNumber == null)
@@ -1728,12 +1792,25 @@ function onGenerate2() {
           }
 
           // Now that our list is condensed (possibly), kick it out to the table
-          for (i =0; i< compSize; ++i) {
-            if (compArray[i].Count > 0) {
+ //         for (i =0; i< compSize; ++i) {
+ //           if (compArray[i].Count > 0) {
+ //             //  ResultTable.append("<tr></tr>");
+ //             ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + compArray[i].Name + "</td>" +
+ //             "<td>" + compArray[i].Count + "</td>" + "<td>" + compArray[i].PartNumber + "</td>" +
+ //             "<td>" + compArray[i].Revision + "</td>" + "</tr>");
+ //           }
+            // Once we hit a 0 count, that means we are done with our list
+ //           else
+ //             break;
+ //         }
+
+          // Now that our list is condensed (possibly), kick it out to the second version of the table
+          for (i =0; i< comp2Size; ++i) {
+            if (comp2Array[i].Count > 0) {
               //  ResultTable.append("<tr></tr>");
-              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + compArray[i].Name + "</td>" +
-              "<td>" + compArray[i].Count + "</td>" + "<td>" + compArray[i].PartNumber + "</td>" +
-              "<td>" + compArray[i].Revision + "</td>" + "</tr>");
+              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + comp2Array[i].Name + "</td>" +
+              "<td>" + comp2Array[i].Count + "</td>" + "<td>" + comp2Array[i].PartNumber + "</td>" +
+              "<td>" + comp2Array[i].Revision + "</td>" + "</tr>");
             }
             // Once we hit a 0 count, that means we are done with our list
             else
