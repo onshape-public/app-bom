@@ -1611,20 +1611,90 @@ function onGenerate() {
       });
 }
 
-// Second half to the generate function ... need the bounding box results first
-function onGenerate2() {
-// Add an image of the model to the page
-  ResultImage = $('<div style="float:right"></div>');
-  ResultImage.addClass('ResultImage');
+// Keep track of all the components and sub-assemblies we find.
+var Comp2Array = [];
+var SubAsmArray = [];
 
-  var body = {
-    "documentId" : theContext.documentId,
-    "elementId" : theContext.elementId,
-    "workspaceId" : theContext.workspaceId,
-    "viewMatrix" : [0.707,0.707,0,-tX,-0.409,0.409,0.816,-tY,0.577,-0.577,0.577,-tZ],
-    "outputHeight" : 600,
-    "outputWidth" : 600,
-    "pixelSize" : realSize / 600
+function generateBBox(elementId) {
+  return new Promise(function(resolve, reject) {
+    // Get the bounding box size
+    var bodyBox = {
+      "documentId": theContext.documentId,
+      "elementId": elementId,
+      "workspaceId": theContext.workspaceId,
+      "partQuery": null,
+      "includeHidden": false
+    }
+    var callBoxParams = {
+      "name": "generic",
+      "method": "POST",
+      "path": "/api/models/boundingbox",
+      "sessionID": sessionID,
+      "body": JSON.stringify(bodyBox, null, 2)
+    }
+
+    $.post("/proxy", callBoxParams)
+      .done(function (data) {
+        try {
+          var res = JSON.parse(data);
+          var xLow = res.lowX;
+          var xHigh = res.highX;
+          var yLow = res.lowY;
+          var yHigh = res.highY;
+          var zLow = res.lowZ;
+          var zHigh = res.highZ;
+
+          // Get the size of the BBox
+          var xDiff = xHigh - xLow;
+          var yDiff = yHigh - yLow;
+          var zDiff = zHigh - zLow;
+          bSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
+
+          // Find the center of the BBox - model coordinates
+          var xCenter = (xHigh + xLow) / 2;
+          var yCenter = (yHigh + yLow) / 2;
+          var zCenter = (zHigh + zLow) / 2;
+
+          var bX = xCenter * 0.707 + xCenter * -0.409 + xCenter * 0.577;
+          var bY = yCenter * 0.707 + yCenter * 0.409 + yCenter * -0.577;
+          var bZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
+
+          // Now, finish the rest of the work.
+          resolve(1);
+
+          generateThumbs({'Element' : elementId, 'xCtr' : bX, 'yCtr' : bY, 'zCtr' : bZ, 'size' : bSize });
+        }
+        catch (err) {
+          reject(0);
+        }
+      })
+      .fail(function () {
+        reject(0);
+      });
+  });
+}
+
+var ImagesArray = [];
+var ImagesSize = 0;
+
+function generateThumbs(argMap) {
+
+  return new Promise(function(resolve, reject) {
+
+    var elementId = argMap.Element;
+    var xCtr = argMap.xCtr;
+    var yCtr = argMap.yCtr;
+    var zCtr = argMap.zCtr;
+    var size = argMap.size;
+
+    var body = {
+    "documentId": theContext.documentId,
+    "elementId": elementId,
+    "workspaceId": theContext.workspaceId,
+    "viewMatrix": [0.707, 0.707, 0, xCtr, -0.409, 0.409, 0.816, yCtr, 0.577, -0.577, 0.577, zCtr],
+    "outputHeight": 200,
+    "outputWidth": 200,
+    "pixelSize": size / 200
   }
   var callParams = {
     "name": "generic",
@@ -1637,7 +1707,143 @@ function onGenerate2() {
   var imageString = "";
 
   $.post("/proxy", callParams)
+      .done(function (data) {
+        try {
+          var res = JSON.parse(data);
+          if (res.images.length > 0) {
+            ImagesArray[ImageSize] = {
+              Image : res.images[0],
+              Element : elementId
+            }
+          }
+          resolve(1);
+        }
+        catch (err) {
+          reject(0);
+        }
+      })
+      .fail(function () {
+        resolve(0);
+      });
+  });
+}
+
+function findAssemblies(resolve, reject) {
+  var path = "/api/elements/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "?withThumbnails:false";
+  var params = {name:"generic", method:"GET", path: path};
+  params.sessionID = sessionID;
+
+  $.post("/proxy", params)
       .done(function( data ) {
+        try {
+          // for each element, create a select option to make that element the current context
+          var obj = $.parseJSON(data);
+          var id;
+          for (var i = 0; i < obj.length; ++i) {
+            if (obj[i].type == 'ASSEMBLY') {
+              // Add this to the list of assemblies
+              SubAsmArray[SubAsmArray.length] = {
+                Element: obj[i].elementId,
+                Count: 0,
+                Handled: false,
+                Components : []
+              }
+            }
+          }
+
+          resolve(SubAsmArray);
+        }
+        catch (err) {
+          reject("Problem fetching elements");
+        }
+      });
+}
+
+function findComponents(resolve, reject, nextElement, asmIndex) {
+  // Use the new API to pull component and sub-assembly info
+  var topPath = "/api/models/assembly/definition/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "/element/" + nextElement + "?includeMateFeatures=false";
+  var topParams = {name:"generic", method:"GET", path: topPath};
+  topParams.sessionID = sessionID;
+
+  $.post("/proxy", topParams)
+      .done(function(data) {
+        var compData = JSON.parse(data);
+
+        // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
+        for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
+          if (compData.rootAssembly.instances[i].type == "Part") {
+            var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
+            var itemName = compData.rootAssembly.instances[i].name;
+            if (bracketIndex > -1)
+              itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
+
+            // Search through the list of components to find a match
+            var found = false;
+            var foundIndex = 0;
+            for (var y = 0; y < SubAsmArray[asmIndex].Components.length; ++y) {
+              if (SubAsmArray[asmIndex].Components[y].Name == itemName) {
+                SubAsmArray[asmIndex].Components[y].Count++;
+                found = true;
+                break;
+              }
+            }
+
+            // If we didn't find an entry for this, add it at the end.
+            if (found != true) {
+              var nextItem = SubAsmArray[asmIndex].Components.length;
+              SubAsmArray[asmIndex].Components[nextItem] = {
+                Name: itemName,
+                Count: 1,
+                PartNumber: 0,
+                Revision: 1
+              }
+            }
+          }
+        }
+
+        // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
+        for (var z = 0; z < compData.subAssemblies.length; ++z) {
+          var subElementId = compData.subAssemblies[z].elementId;
+          for (var n = 0; n < SubAsmArray.length; ++n) {
+            if (subElementId == SubAsmArray[n].Element)
+              SubAsmArray[n].Count++;
+          }
+        }
+
+        resolve(asmIndex);
+      })
+      .fail(function(data) {
+        reject("Error finding components for assembly");
+      });
+}
+
+// Second half to the generate function ... need the bounding box results first
+function onGenerate2() {
+// Add an image of the model to the page
+  ResultImage = $('<div style="float:right"></div>');
+  ResultImage.addClass('ResultImage');
+
+  var body = {
+    "documentId": theContext.documentId,
+    "elementId": theContext.elementId,
+    "workspaceId": theContext.workspaceId,
+    "viewMatrix": [0.707, 0.707, 0, -tX, -0.409, 0.409, 0.816, -tY, 0.577, -0.577, 0.577, -tZ],
+    "outputHeight": 600,
+    "outputWidth": 600,
+    "pixelSize": realSize / 600
+  }
+  var callParams = {
+    "name": "generic",
+    "method": "POST",
+    "path": "/api/drawings/shaded",
+    "sessionID": sessionID,
+    "body": JSON.stringify(body, null, 2)
+  }
+
+  var imageString = "";
+
+  $.post("/proxy", callParams)
+      .done(function (data) {
         try {
           var res = JSON.parse(data);
           if (res.images.length > 0) {
@@ -1652,8 +1858,7 @@ function onGenerate2() {
         catch (err) {
         }
       })
-      .fail(function() {
-        alert("Problem with image capture");
+      .fail(function () {
       });
 
 // Create block dom
@@ -1674,59 +1879,69 @@ function onGenerate2() {
 //  $('#apis').append(this.title);
   $('#apis').append(this.block);
 
-  // Use the new API to pull component and sub-assembly info
-  var topPath = "/api/models/assembly/definition/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "/element/" + theContext.elementId + "?includeMateFeatures=false";
-  var topParams = {name:"generic", method:"GET", path: topPath};
-  topParams.sessionID = sessionID;
+  // Recursive search for components in the assembly
+  Comp2Array = [];
+  SubAsmArray = [];
 
-  var comp2Array = {};
-  var comp2Size = 0;
+  var getPromise = new Promise(findAssemblies);
 
-  $.post("/proxy", topParams)
-      .done(function(data) {
-        var compData = JSON.parse(data);
-        // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
-        for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
-          if (compData.rootAssembly.instances[i].type == "Part") {
-            var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
-            var itemName = compData.rootAssembly.instances[i].name;
-            if (bracketIndex > -1)
-              itemName = compData.rootAssembly.instances[i].name.substring(0,bracketIndex-1);
+  // Find all assemblies in the model
+  return getPromise.then(function() {
+    var listPromises = [];
 
-            // Search through the list of components to find a match
-            var found = false;
-            for (var x = 0; x < comp2Size; ++x){
-              if (comp2Array[x].Name == itemName) {
-                comp2Array[x].Count++;
-                found = true;
+    // Find all of the components in those assemblies
+    for (var x = 0; x < SubAsmArray.length; ++x) {
+      listPromises.push(new Promise(function(resolve, reject) { findComponents(resolve, reject, SubAsmArray[x].Element, x); }));
+    }
 
-                // Found a match or a place to put this component, kick out of the search
-                break;
-              }
-            }
+    return Promise.all(listPromises);
+  }).then(function() {
+    // Generate all of the thumbnails of the models
+    for (var x = 0; x < SubAsmArray.length; ++x) {
+      generateBBox(SubAsmArray[x].Element);
+    }
+  }).then(function() {
+    // Match up revision/part number and total counts here
+    onGenerate3();
+  });
 
-            // If we didn't find an entry for this, add it at the end.
-            if (found != true) {
-              comp2Array[comp2Size] = {
-                Name : itemName,
-                Count : 1,
-                PartNumber : 0,
-                Revision : 1,
-              }
-              comp2Size++;
-            }
-          }
-        }
+}
 
-
-      })
-        .fail(function(data) {
-    });
-
+function onGenerate3()
+{
 // Add all of the parts of the selected document to the table
   var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
   var params = {name:"generic", method:"GET", path: path};
   params.sessionID = sessionID;
+
+  // Create a flattened list of components
+  for (var i = 0; i < SubAsmArray.length; ++i) {
+    for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
+      // Find out if this component exists in our flattened list yet
+      var found = false;
+      var countMultiplier = 1;
+      if (SubAsmArray[i].Count > 1)
+        countMultiplier = (SubAsmArray[i].Count - 1);
+
+      for (var y = 0; y < Comp2Array.length; ++ y) {
+        if (Comp2Array[y].Name == SubAsmArray[i].Components[x].Name) {
+          Comp2Array[y].Count += countMultiplier * SubAsmArray[i].Components[x].Count;
+          found = true;
+          break;
+        }
+      }
+
+      // Add this component to the list
+      if (found == false) {
+        Comp2Array[Comp2Array.length] = {
+          Name : SubAsmArray[i].Components[x].Name,
+          Count : countMultiplier * SubAsmArray[i].Components[x].Count,
+          PartNumber : 0,
+          Revision : 1
+        }
+      }
+    }
+  }
 
   $.post("/proxy", params)
       .done(function( data ) {
@@ -1762,12 +1977,12 @@ function onGenerate2() {
               }
 
               // Update the master list of information with PartNumber/Revision
-              for (x = 0; x < comp2Size; ++x) {
-                if (comp2Array[x].Name == itemName) {
+              for (x = 0; x < Comp2Array.length; ++x) {
+                if (Comp2Array[x].Name == itemName) {
                   if (partNumber != null)
-                    comp2Array[x].PartNumber = partNumber;
+                    Comp2Array[x].PartNumber = partNumber;
                   if (revision != null)
-                    comp2Array[x].Revision = revision;
+                    Comp2Array[x].Revision = revision;
 
                   // Found a match or a place to put this component, kick out of the search
                   break;
@@ -1791,26 +2006,13 @@ function onGenerate2() {
             }
           }
 
-          // Now that our list is condensed (possibly), kick it out to the table
- //         for (i =0; i< compSize; ++i) {
- //           if (compArray[i].Count > 0) {
- //             //  ResultTable.append("<tr></tr>");
- //             ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + compArray[i].Name + "</td>" +
- //             "<td>" + compArray[i].Count + "</td>" + "<td>" + compArray[i].PartNumber + "</td>" +
- //             "<td>" + compArray[i].Revision + "</td>" + "</tr>");
- //           }
-            // Once we hit a 0 count, that means we are done with our list
- //           else
- //             break;
- //         }
-
           // Now that our list is condensed (possibly), kick it out to the second version of the table
-          for (i =0; i< comp2Size; ++i) {
-            if (comp2Array[i].Count > 0) {
+          for (i =0; i < Comp2Array.length; ++i) {
+            if (Comp2Array[i].Count > 0) {
               //  ResultTable.append("<tr></tr>");
-              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + comp2Array[i].Name + "</td>" +
-              "<td>" + comp2Array[i].Count + "</td>" + "<td>" + comp2Array[i].PartNumber + "</td>" +
-              "<td>" + comp2Array[i].Revision + "</td>" + "</tr>");
+              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+              "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+              "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
             }
             // Once we hit a 0 count, that means we are done with our list
             else
@@ -1818,7 +2020,6 @@ function onGenerate2() {
           }
         }
         catch (err) {
-          alert("Problem setting element list");
         }
       });
 
