@@ -111,3 +111,15 @@ td {
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+.collapse .toggle {
+  background: url("../images/collapsed.svg");
+}
+.expand .toggle {
+  background: url("../images/expanded.svg");
+}
+.toggle {
+  height: 10px;
+  width: 10px;
+  display: inline-block;
+}

@@ -14,12 +14,18 @@
     <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
     <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
     <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
+    <script src="js/q.js"></script>
     <script src="js/devconsole.js"></script>
 
     <div id="top-toolbar">
        <div id="context-table">
            Bill of Materials:
            <select id="elt-select"></select>
+           <select id="type-select">
+               <option>Flattened Component List</option>
+               <option>Top Level List</option>
+               <option>Complete Tree Display</option>
+           </select>
            <input type="image" id="element-generate" width="20" height="20" style="border:none" src="./images/150413_Feature_Icons_Refresh.svg" />
        </div>
     </div>

@@ -1746,6 +1746,7 @@ function findAssemblies(resolve, reject) {
                 Element: obj[i].elementId,
                 Count: 0,
                 Handled: false,
+                Name : obj[i].name,
                 Components : []
               }
             }
@@ -1757,6 +1758,30 @@ function findAssemblies(resolve, reject) {
           reject("Problem fetching elements");
         }
       });
+}
+
+function saveComponentToList(asmIndex, itemName, elementId) {
+  var found = false;
+  var foundIndex = 0;
+  for (var y = 0; y < SubAsmArray[asmIndex].Components.length; ++y) {
+    if (SubAsmArray[asmIndex].Components[y].Name == itemName) {
+      SubAsmArray[asmIndex].Components[y].Count++;
+      found = true;
+      break;
+    }
+  }
+
+  // If we didn't find an entry for this, add it at the end.
+  if (found != true) {
+    var nextItem = SubAsmArray[asmIndex].Components.length;
+    SubAsmArray[asmIndex].Components[nextItem] = {
+      Name: itemName,
+      ElementId : elementId,
+      Count: 1,
+      PartNumber: 0,
+      Revision: 1
+    }
+  }
 }
 
 function findComponents(resolve, reject, nextElement, asmIndex) {
@@ -1778,36 +1803,27 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
               itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
             // Search through the list of components to find a match
-            var found = false;
-            var foundIndex = 0;
-            for (var y = 0; y < SubAsmArray[asmIndex].Components.length; ++y) {
-              if (SubAsmArray[asmIndex].Components[y].Name == itemName) {
-                SubAsmArray[asmIndex].Components[y].Count++;
-                found = true;
-                break;
-              }
-            }
-
-            // If we didn't find an entry for this, add it at the end.
-            if (found != true) {
-              var nextItem = SubAsmArray[asmIndex].Components.length;
-              SubAsmArray[asmIndex].Components[nextItem] = {
-                Name: itemName,
-                Count: 1,
-                PartNumber: 0,
-                Revision: 1
-              }
-            }
+            saveComponentToList(asmIndex, itemName, 0);
           }
         }
 
         // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
         for (var z = 0; z < compData.subAssemblies.length; ++z) {
           var subElementId = compData.subAssemblies[z].elementId;
+          var found = false;
+          var asmName;
           for (var n = 0; n < SubAsmArray.length; ++n) {
-            if (subElementId == SubAsmArray[n].Element)
+            if (subElementId == SubAsmArray[n].Element) {
               SubAsmArray[n].Count++;
+              found = true;
+              asmName = SubAsmArray[n].Name;
+              break;
+            }
           }
+
+          // Save this as a 'component' in the list too
+          if (found == true)
+            saveComponentToList(asmIndex, asmName, subElementId);
         }
 
         resolve(asmIndex);
@@ -1870,6 +1886,7 @@ function onGenerate2() {
   ResultTable.addClass('resultTable');
   this.block.append(ResultTable);
 
+  ResultTable.append("<th style='min-width:25px' align='left'> </th>");
   ResultTable.append("<th style='min-width:125px' align='left'>Item Number</th>");
   ResultTable.append("<th style='min-width:200px' align='left'>Component Name</th>");
   ResultTable.append("<th style='min-width:100px' align='left'>Count</th>");
@@ -1907,16 +1924,17 @@ function onGenerate2() {
 
 }
 
-function onGenerate3()
-{
-// Add all of the parts of the selected document to the table
-  var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
-  var params = {name:"generic", method:"GET", path: path};
-  params.sessionID = sessionID;
-
+//
+// From all of the assemblies, create a list of flattened components
+//
+function createFlattenedList() {
   // Create a flattened list of components
   for (var i = 0; i < SubAsmArray.length; ++i) {
     for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
+      // Skip over any sub-assemblies in the list
+      if (SubAsmArray[i].Components[x].ElementId != 0)
+        continue;
+
       // Find out if this component exists in our flattened list yet
       var found = false;
       var countMultiplier = 1;
@@ -1937,11 +1955,139 @@ function onGenerate3()
           Name : SubAsmArray[i].Components[x].Name,
           Count : countMultiplier * SubAsmArray[i].Components[x].Count,
           PartNumber : 0,
-          Revision : 1
+          Revision : 1,
+          Level : 0,
+          Collapse : false
         }
       }
     }
   }
+}
+
+//
+// Add a component to the master list
+//
+function addComponentToList(indexI, indexX, levelIn, forceAdd) {
+  var found = false;
+
+  if (forceAdd == false) {
+    for (var y = 0; y < Comp2Array.length; ++y) {
+      if (Comp2Array[y].Name == SubAsmArray[indexI].Components[indexX].Name) {
+        Comp2Array[y].Count += SubAsmArray[indexI].Components[indexX].Count;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  // Add this component to the list
+  if (found == false) {
+    Comp2Array[Comp2Array.length] = {
+      Name : SubAsmArray[indexI].Components[indexX].Name,
+      Count : SubAsmArray[indexI].Components[indexX].Count,
+      PartNumber : 0,
+      Revision : 1,
+      Level : levelIn,
+      Collapse : false
+    }
+  }
+}
+
+//
+// Add the Sub Assembly to the list with the proper count
+// Then add all of the components for one instance of the sub-assembly
+//
+function addSubAssemblyToList(indexI, levelIn, recurse) {
+  // Put on the sub-assembly with the collapse option as TRUE
+  Comp2Array[Comp2Array.length] = {
+    Name : SubAsmArray[indexI].Name,
+    Count : SubAsmArray[indexI].Count,
+    PartNumber : 0,
+    Revision : 1,
+    Level : levelIn + 1,
+    Collapse : true
+  }
+
+  // Now go through and add all of the children components at Level 1
+  for (var x = 0; x < SubAsmArray[indexI].Components.length; ++x) {
+    if (SubAsmArray[indexI].Components[x].ElementId == 0)
+      addComponentToList(indexI, x, levelIn + 1, true);
+    else if (recurse == true) {
+      // Add sub-assemblies to the tree
+      for (var y = 1; y < SubAsmArray.length; ++y) {
+        if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].ElementId)
+          addSubAssemblyToList(y, levelIn + 2, true);
+      }
+    }
+  }
+}
+
+//
+// From all of the assemblies, create a list of components by sub-assembly
+//
+function createLayeredList() {
+  // Walk from the top-level assembly
+  var currentLevel = 0;
+  for (var i = 0; i < SubAsmArray.length; ++i) {
+    if (i > 0) {
+      // Add a sub-assembly to the master list ... note the first one is the top-level assembly
+      addSubAssemblyToList(i, x, false);
+    }
+    else {
+      for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
+        // Find out if this component exists in our flattened list yet
+        if (SubAsmArray[i].Components[x].ElementId == 0)
+          addComponentToList(i, x, currentLevel, false);
+      }
+    }
+  }
+}
+
+//
+// From all of the assemblies, create a list of components by sub-assembly
+//
+function createTreeList() {
+  if (SubAsmArray.length == 0)
+    return;
+
+  // Walk from the top-level assembly
+  var currentLevel = 0;
+  for (var x = 0; x < SubAsmArray[0].Components.length; ++x) {
+    // Find out if this component exists in our flattened list yet
+    if (SubAsmArray[0].Components[x].ElementId == 0)
+      addComponentToList(i, x, currentLevel, false);
+    else {
+      // Find the sub-assembly to add ...
+      for (var y = 1; y < SubAsmArray.length; ++y) {
+        if (SubAsmArray[y].Element == SubAsmArray[0].Components[x].ElementId)
+          addSubAssemblyToList(y, currentLevel, true);
+      }
+    }
+  }
+}
+
+function onGenerate3()
+{
+// Add all of the parts of the selected document to the table
+  var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
+  var params = {name:"generic", method:"GET", path: path};
+  params.sessionID = sessionID;
+
+  var isFlat = true;
+
+  // Create a flattened list of components
+  var e = document.getElementById("type-select");
+  if (e.selectedIndex == 0)
+    createFlattenedList();
+  else if (e.selectedIndex == 1) {
+    isFlat = false;
+    createLayeredList();
+  }
+  else {
+    isFlat = false;
+    createTreeList();
+  }
+
 
   $.post("/proxy", params)
       .done(function( data ) {
@@ -1972,7 +2118,8 @@ function onGenerate3()
                     compArray[x].Revision = revision;
 
                   // Found a match or a place to put this component, kick out of the search
-                  break;
+                  if (isFlat)
+                    break;
                 }
               }
 
@@ -1985,7 +2132,8 @@ function onGenerate3()
                     Comp2Array[x].Revision = revision;
 
                   // Found a match or a place to put this component, kick out of the search
-                  break;
+                  if (isFlat)
+                    break;
                 }
               }
 
@@ -2007,16 +2155,34 @@ function onGenerate3()
           }
 
           // Now that our list is condensed (possibly), kick it out to the second version of the table
+          var currentItemNumber = 0;
+          var currentSubItemNumber = 0;
           for (i =0; i < Comp2Array.length; ++i) {
             if (Comp2Array[i].Count > 0) {
               //  ResultTable.append("<tr></tr>");
-              ResultTable.append("<tr>" + "<td>" + (i+1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
-              "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
-              "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+              if (Comp2Array[i].Collapse == true) {
+                ResultTable.append("<tr data-depth='0' class='collapse level0'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
+                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+                currentSubItemNumber = 0;
+                currentItemNumber++;
+              }
+              else if (Comp2Array[i].Level == 0) {
+                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+                currentItemNumber++;
+              }
+              else {
+                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "'>" + "<td> </td><td>*" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+                currentSubItemNumber++;
+              }
             }
             // Once we hit a 0 count, that means we are done with our list
             else
-              break;
+              continue;
           }
         }
         catch (err) {
@@ -2026,3 +2192,43 @@ function onGenerate3()
 
 }
 
+//
+// Expand/Collapse code for the controls in the generated BOM table
+//
+$(function() {
+  $('#apis').on('click', '.toggle', function () {
+    //Gets all <tr>'s  of greater depth
+    //below element in the table
+    var findChildren = function (tr) {
+      var depth = tr.data('depth');
+      return tr.nextUntil($('tr').filter(function () {
+        return $(this).data('depth') <= depth;
+      }));
+    };
+
+    var el = $(this);
+    var tr = el.closest('tr'); //Get <tr> parent of toggle button
+    var children = findChildren(tr);
+
+    //Remove already collapsed nodes from children so that we don't
+    //make them visible.
+    //(Confused? Remove this code and close Item 2, close Item 1
+    //then open Item 1 again, then you will understand)
+    var subnodes = children.filter('.expand');
+    subnodes.each(function () {
+      var subnode = $(this);
+      var subnodeChildren = findChildren(subnode);
+      children = children.not(subnodeChildren);
+    });
+
+    //Change icon and hide/show children
+    if (tr.hasClass('collapse')) {
+      tr.removeClass('collapse').addClass('expand');
+      children.hide();
+    } else {
+      tr.removeClass('expand').addClass('collapse');
+      children.show();
+    }
+    return children;
+  });
+});
