@@ -1999,12 +1999,15 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
 //
 function addSubAssemblyToList(indexI, levelIn, recurse) {
   // Put on the sub-assembly with the collapse option as TRUE
+  var asmCount = SubAsmArray[indexI].Count;
+  if (recurse == true)
+    asmCount = 1;
   Comp2Array[Comp2Array.length] = {
     Name : SubAsmArray[indexI].Name,
-    Count : SubAsmArray[indexI].Count,
+    Count : asmCount,
     PartNumber : 0,
     Revision : 1,
-    Level : levelIn + 1,
+    Level : levelIn,
     Collapse : true
   }
 
@@ -2016,7 +2019,7 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
       // Add sub-assemblies to the tree
       for (var y = 1; y < SubAsmArray.length; ++y) {
         if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].ElementId)
-          addSubAssemblyToList(y, levelIn + 2, true);
+          addSubAssemblyToList(y, levelIn + 1, true);
       }
     }
   }
@@ -2031,7 +2034,7 @@ function createLayeredList() {
   for (var i = 0; i < SubAsmArray.length; ++i) {
     if (i > 0) {
       // Add a sub-assembly to the master list ... note the first one is the top-level assembly
-      addSubAssemblyToList(i, x, false);
+      addSubAssemblyToList(i, 0, false);
     }
     else {
       for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
@@ -2055,7 +2058,7 @@ function createTreeList() {
   for (var x = 0; x < SubAsmArray[0].Components.length; ++x) {
     // Find out if this component exists in our flattened list yet
     if (SubAsmArray[0].Components[x].ElementId == 0)
-      addComponentToList(i, x, currentLevel, false);
+      addComponentToList(0, x, currentLevel, false);
     else {
       // Find the sub-assembly to add ...
       for (var y = 1; y < SubAsmArray.length; ++y) {
@@ -2159,9 +2162,32 @@ function onGenerate3()
           var currentSubItemNumber = 0;
           for (i =0; i < Comp2Array.length; ++i) {
             if (Comp2Array[i].Count > 0) {
+              var colorOverride = "";
+              var level = Comp2Array[i].Level;
+              if (Comp2Array[i].Collapse == true)
+                level++;
+
+              switch(Comp2Array[i].Level) {
+                case 0:
+                      colorOverride = "";
+                      break;
+                case 1:
+                      colorOverride = "LightGray";
+                      break;
+                case 2:
+                      colorOverride = "Gray";
+                      break;
+                case 3:
+                      colorOverride = "DarkGray";
+                      break;
+                default:
+                      colorOverride = "";
+                      break;
+              }
+
               //  ResultTable.append("<tr></tr>");
               if (Comp2Array[i].Collapse == true) {
-                ResultTable.append("<tr data-depth='0' class='collapse level0'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
+                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber = 0;
@@ -2174,7 +2200,7 @@ function onGenerate3()
                 currentItemNumber++;
               }
               else {
-                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "'>" + "<td> </td><td>*" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber++;
