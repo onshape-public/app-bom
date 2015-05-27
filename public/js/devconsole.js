@@ -1762,7 +1762,7 @@ function findAssemblies(resolve, reject) {
       });
 }
 
-function saveComponentToList(asmIndex, itemName, elementId) {
+function saveComponentToList(asmIndex, itemName, asmElementId, partElementId) {
   var found = false;
   var foundIndex = 0;
   for (var y = 0; y < SubAsmArray[asmIndex].Components.length; ++y) {
@@ -1778,7 +1778,8 @@ function saveComponentToList(asmIndex, itemName, elementId) {
     var nextItem = SubAsmArray[asmIndex].Components.length;
     SubAsmArray[asmIndex].Components[nextItem] = {
       Name: itemName,
-      ElementId : elementId,
+      ElementId : partElementId,
+      AsmElementId : asmElementId,
       Count: 1,
       PartNumber: 0,
       Revision: 1
@@ -1805,7 +1806,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
               itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
             // Search through the list of components to find a match
-            saveComponentToList(asmIndex, itemName, 0);
+            saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
           }
         }
 
@@ -1825,7 +1826,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
 
           // Save this as a 'component' in the list too
           if (found == true)
-            saveComponentToList(asmIndex, asmName, subElementId);
+            saveComponentToList(asmIndex, asmName, subElementId, 0);
         }
 
         resolve(asmIndex);
@@ -1884,7 +1885,7 @@ function onGenerate2() {
   this.block = $('<div class="block" position="relative"></div>');
   this.block.attr("bom", "bom")
   this.block.append(ResultImage);
-  ResultTable = $('<table></table>');
+  ResultTable = $('<table valign="center"></table>');
   ResultTable.addClass('resultTable');
   this.block.append(ResultTable);
 
@@ -1909,6 +1910,11 @@ function onGenerate2() {
   ImagesArray = [];
   ThumbPromises = [];
 
+  var addImage = false;
+  var e = document.getElementById("thumbs-generate");
+  if (e.checked == true)
+    addImage = true;
+
   var getPromise = new Promise(findAssemblies);
 
   // Find all assemblies in the model
@@ -1924,11 +1930,21 @@ function onGenerate2() {
   }).then(function() {
     var bboxPromises = [];
 
-    // Generate all of the thumbnails of the models
-    for (var x = 0; x < SubAsmArray.length; ++x) {
-      var thumbPromise = generateBBox(SubAsmArray[x].Element);
-      bboxPromises.push(thumbPromise);
+    if (addImage) {
+      // Generate all of the thumbnails of the models
+      for (var x = 0; x < SubAsmArray.length; ++x) {
+        var thumbPromise = generateBBox(SubAsmArray[x].Element);
+        bboxPromises.push(thumbPromise);
+ //       for (var y = 0; y < SubAsmArray[x].Components.length; ++y) {
+ //         if (SubAsmArray[x].Components[y].AsmElementId == 0) {
+            // Generate the thumbnail for the parts too
+ //           var nextThumbPromise = generateBBox(SubAsmArray[x].Components[y].ElementId);
+ //          bboxPromises.push(nextThumbPromise);
+ //         }
+ //       }
+      }
     }
+
     return Promise.all(bboxPromises);
   }).then(function() {
     // Make sure all of the images are captured
@@ -1948,7 +1964,7 @@ function createFlattenedList() {
   for (var i = 0; i < SubAsmArray.length; ++i) {
     for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
       // Skip over any sub-assemblies in the list
-      if (SubAsmArray[i].Components[x].ElementId != 0)
+      if (SubAsmArray[i].Components[x].AsmElementId != 0)
         continue;
 
       // Find out if this component exists in our flattened list yet
@@ -1974,6 +1990,7 @@ function createFlattenedList() {
           Revision : 1,
           Level : 0,
           Collapse : false,
+          ElementId : SubAsmArray[i].Components[x].ElementId,
           AsmElementId : 0
         }
       }
@@ -2006,6 +2023,7 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
       Revision : 1,
       Level : levelIn,
       Collapse : false,
+      ElementId : SubAsmArray[indexI].Components[indexX].ElementId,
       AsmElementId : 0
     }
   }
@@ -2027,17 +2045,18 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
     Revision : 1,
     Level : levelIn,
     Collapse : true,
+    ElementId : 0,
     AsmElementId : SubAsmArray[indexI].Element
   }
 
   // Now go through and add all of the children components at Level 1
   for (var x = 0; x < SubAsmArray[indexI].Components.length; ++x) {
-    if (SubAsmArray[indexI].Components[x].ElementId == 0)
+    if (SubAsmArray[indexI].Components[x].AsmElementId == 0)
       addComponentToList(indexI, x, levelIn + 1, true);
     else if (recurse == true) {
       // Add sub-assemblies to the tree
       for (var y = 1; y < SubAsmArray.length; ++y) {
-        if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].ElementId)
+        if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].AsmElementId)
           addSubAssemblyToList(y, levelIn + 1, true);
       }
     }
@@ -2058,7 +2077,7 @@ function createLayeredList() {
     else {
       for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
         // Find out if this component exists in our flattened list yet
-        if (SubAsmArray[i].Components[x].ElementId == 0)
+        if (SubAsmArray[i].Components[x].AsmElementId == 0)
           addComponentToList(i, x, currentLevel, false);
       }
     }
@@ -2076,12 +2095,12 @@ function createTreeList() {
   var currentLevel = 0;
   for (var x = 0; x < SubAsmArray[0].Components.length; ++x) {
     // Find out if this component exists in our flattened list yet
-    if (SubAsmArray[0].Components[x].ElementId == 0)
+    if (SubAsmArray[0].Components[x].AsmElementId == 0)
       addComponentToList(0, x, currentLevel, false);
     else {
       // Find the sub-assembly to add ...
       for (var y = 1; y < SubAsmArray.length; ++y) {
-        if (SubAsmArray[y].Element == SubAsmArray[0].Components[x].ElementId)
+        if (SubAsmArray[y].Element == SubAsmArray[0].Components[x].AsmElementId)
           addSubAssemblyToList(y, currentLevel, true);
       }
     }
@@ -2196,23 +2215,23 @@ function onGenerate3()
                 colorOverride = rValue.toString(16);;
               }
 
+              // Get the image to use
+              var imageString = "";
+              for (var im = 0; im < ImagesArray.length; ++im) {
+                if (ImagesArray[im].Element == Comp2Array[i].AsmElementId ||
+                    ImagesArray[im].Element == Comp2Array[i].ElementId) {
+                  var image = ImagesArray[im].Image;
+                  imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
+                  break;
+                }
+              }
+
+              var totalImageString = "";
+              if (addImage)
+                totalImageString = "<td>" + imageString + "</td>";
+
               //  ResultTable.append("<tr></tr>");
               if (Comp2Array[i].Collapse == true) {
-
-                // Get the image to use
-                var imageString = "";
-                for (var im = 0; im < ImagesArray.length; ++im) {
-                  if (ImagesArray[im].Element == Comp2Array[i].AsmElementId) {
-                    var image = ImagesArray[im].Image;
-                    imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
-                    break;
-                  }
-                }
-
-                var totalImageString = "";
-                if (addImage)
-                  totalImageString = "<td>" + imageString + "</td>";
-
                 ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
@@ -2220,18 +2239,12 @@ function onGenerate3()
                 currentItemNumber++;
               }
               else if (Comp2Array[i].Level == 0) {
-                var totalImageString = "";
-                if (addImage)
-                  totalImageString = "<td></td>";
                 ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentItemNumber++;
               }
               else {
-                var totalImageString = "";
-                if (addImage)
-                  totalImageString = "<td></td>";
                 ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
