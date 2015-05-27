@@ -1890,7 +1890,11 @@ function onGenerate2() {
 
   ResultTable.append("<th style='min-width:25px' align='left'> </th>");
   ResultTable.append("<th style='min-width:125px' align='left'>Item Number</th>");
-  ResultTable.append("<th style='min-width:75px' align='left'>Image</th>");
+
+  var e = document.getElementById("thumbs-generate");
+  if (e.checked == true)
+    ResultTable.append("<th style='min-width:75px' align='left'>Image</th>");
+
   ResultTable.append("<th style='min-width:200px' align='left'>Component Name</th>");
   ResultTable.append("<th style='min-width:100px' align='left'>Count</th>");
   ResultTable.append("<th style='min-width:150px' align='left'>Part Number</th>");
@@ -2106,6 +2110,11 @@ function onGenerate3()
     createTreeList();
   }
 
+  // Check to see if we should add the images
+  var addImage = false;
+  var e = document.getElementById("thumbs-generate");
+  if (e.checked == true)
+    addImage = true;
 
   $.post("/proxy", params)
       .done(function( data ) {
@@ -2200,20 +2209,30 @@ function onGenerate3()
                   }
                 }
 
-                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td>" + imageString + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
+                var totalImageString = "";
+                if (addImage)
+                  totalImageString = "<td>" + imageString + "</td>";
+
+                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber = 0;
                 currentItemNumber++;
               }
               else if (Comp2Array[i].Level == 0) {
-                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + "<td></td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                var totalImageString = "";
+                if (addImage)
+                  totalImageString = "<td></td>";
+                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentItemNumber++;
               }
               else {
-                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + "<td></td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                var totalImageString = "";
+                if (addImage)
+                  totalImageString = "<td></td>";
+                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber++;
