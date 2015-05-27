@@ -341,7 +341,6 @@ function clientLogMessage(desc, origin, name) {
   $("#client-log").append(msg);
 }
 
-
 // called when we receive a client-side message
 var handlePost = function(e) {
   clientLogMessage("rcvd", e.origin, e.data.messageName);
@@ -1611,7 +1610,9 @@ function onGenerate() {
       });
 }
 
+//
 // Keep track of all the components and sub-assemblies we find.
+//
 var Comp2Array = [];
 var SubAsmArray = [];
 
@@ -1692,9 +1693,9 @@ function generateThumbs(argMap) {
     "elementId": elementId,
     "workspaceId": theContext.workspaceId,
     "viewMatrix": [0.707, 0.707, 0, xCtr, -0.409, 0.409, 0.816, yCtr, 0.577, -0.577, 0.577, zCtr],
-    "outputHeight": 200,
-    "outputWidth": 200,
-    "pixelSize": size / 200
+    "outputHeight": 50,
+    "outputWidth": 50,
+    "pixelSize": size / 50
   }
   var callParams = {
     "name": "generic",
@@ -1888,6 +1889,7 @@ function onGenerate2() {
 
   ResultTable.append("<th style='min-width:25px' align='left'> </th>");
   ResultTable.append("<th style='min-width:125px' align='left'>Item Number</th>");
+  ResultTable.append("<th style='min-width:75px' align='left'>Image</th>");
   ResultTable.append("<th style='min-width:200px' align='left'>Component Name</th>");
   ResultTable.append("<th style='min-width:100px' align='left'>Count</th>");
   ResultTable.append("<th style='min-width:150px' align='left'>Part Number</th>");
@@ -2167,40 +2169,38 @@ function onGenerate3()
               if (Comp2Array[i].Collapse == true)
                 level++;
 
-              switch(Comp2Array[i].Level) {
-                case 0:
-                      colorOverride = "";
-                      break;
-                case 1:
-                      colorOverride = "LightGray";
-                      break;
-                case 2:
-                      colorOverride = "Gray";
-                      break;
-                case 3:
-                      colorOverride = "DarkGray";
-                      break;
-                default:
-                      colorOverride = "";
-                      break;
+              if(Comp2Array[i].Level > 0) {
+                var rValue = 0xFFFFFF - (0x101010*Comp2Array[i].Level);
+                colorOverride = rValue.toString(16);;
               }
 
               //  ResultTable.append("<tr></tr>");
               if (Comp2Array[i].Collapse == true) {
-                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
+
+                // Get the image to use
+                var imageString = "";
+                for (var im = 0; im < ImagesArray.length; ++im) {
+                  if (ImagesArray[im].ElementId == Comp2Array[i].ElementId) {
+                    var image = ImagesArray[im].Image;
+                    imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
+                    break;
+                  }
+                }
+
+                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + "<td>" + imageString + "</td>" + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber = 0;
                 currentItemNumber++;
               }
               else if (Comp2Array[i].Level == 0) {
-                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + "<td></td>" + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentItemNumber++;
               }
               else {
-                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Comp2Array[i].Name + "</td>" +
+                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + "<td></td>" + "<td>" + Comp2Array[i].Name + "</td>" +
                 "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
                 "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
                 currentSubItemNumber++;

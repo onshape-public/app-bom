@@ -113,10 +113,10 @@ td {
 }
 
 .collapse .toggle {
-  background: url("../images/collapsed.svg");
+  background: url("../images/expanded.svg");
 }
 .expand .toggle {
-  background: url("../images/expanded.svg");
+  background: url("../images/collapsed.svg");
 }
 .toggle {
   height: 10px;
