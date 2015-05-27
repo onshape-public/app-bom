@@ -1615,6 +1615,7 @@ function onGenerate() {
 //
 var Comp2Array = [];
 var SubAsmArray = [];
+var ThumbPromises = [];
 
 function generateBBox(elementId) {
   return new Promise(function(resolve, reject) {
@@ -1661,26 +1662,24 @@ function generateBBox(elementId) {
           var bZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
 
           // Now, finish the rest of the work.
-          resolve(1);
-
           generateThumbs({'Element' : elementId, 'xCtr' : bX, 'yCtr' : bY, 'zCtr' : bZ, 'size' : bSize });
+          resolve(1);
         }
         catch (err) {
-          reject(0);
+          reject(1);
         }
       })
       .fail(function () {
-        reject(0);
+          reject(1);
       });
   });
 }
 
 var ImagesArray = [];
-var ImagesSize = 0;
 
 function generateThumbs(argMap) {
 
-  return new Promise(function(resolve, reject) {
+  var thumb = new Promise(function(resolve, reject) {
 
     var elementId = argMap.Element;
     var xCtr = argMap.xCtr;
@@ -1712,7 +1711,7 @@ function generateThumbs(argMap) {
         try {
           var res = JSON.parse(data);
           if (res.images.length > 0) {
-            ImagesArray[ImageSize] = {
+            ImagesArray[ImagesArray.length] = {
               Image : res.images[0],
               Element : elementId
             }
@@ -1727,6 +1726,8 @@ function generateThumbs(argMap) {
         resolve(0);
       });
   });
+
+  ThumbPromises.push(thumb);
 }
 
 function findAssemblies(resolve, reject) {
@@ -1901,6 +1902,8 @@ function onGenerate2() {
   // Recursive search for components in the assembly
   Comp2Array = [];
   SubAsmArray = [];
+  ImagesArray = [];
+  ThumbPromises = [];
 
   var getPromise = new Promise(findAssemblies);
 
@@ -1915,10 +1918,17 @@ function onGenerate2() {
 
     return Promise.all(listPromises);
   }).then(function() {
+    var bboxPromises = [];
+
     // Generate all of the thumbnails of the models
     for (var x = 0; x < SubAsmArray.length; ++x) {
-      generateBBox(SubAsmArray[x].Element);
+      var thumbPromise = generateBBox(SubAsmArray[x].Element);
+      bboxPromises.push(thumbPromise);
     }
+    return Promise.all(bboxPromises);
+  }).then(function() {
+    // Make sure all of the images are captured
+    return Promise.all(ThumbPromises);
   }).then(function() {
     // Match up revision/part number and total counts here
     onGenerate3();
@@ -1959,7 +1969,8 @@ function createFlattenedList() {
           PartNumber : 0,
           Revision : 1,
           Level : 0,
-          Collapse : false
+          Collapse : false,
+          AsmElementId : 0
         }
       }
     }
@@ -1990,7 +2001,8 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
       PartNumber : 0,
       Revision : 1,
       Level : levelIn,
-      Collapse : false
+      Collapse : false,
+      AsmElementId : 0
     }
   }
 }
@@ -2010,7 +2022,8 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
     PartNumber : 0,
     Revision : 1,
     Level : levelIn,
-    Collapse : true
+    Collapse : true,
+    AsmElementId : SubAsmArray[indexI].Element
   }
 
   // Now go through and add all of the children components at Level 1
@@ -2180,7 +2193,7 @@ function onGenerate3()
                 // Get the image to use
                 var imageString = "";
                 for (var im = 0; im < ImagesArray.length; ++im) {
-                  if (ImagesArray[im].ElementId == Comp2Array[i].ElementId) {
+                  if (ImagesArray[im].Element == Comp2Array[i].AsmElementId) {
                     var image = ImagesArray[im].Image;
                     imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
                     break;
