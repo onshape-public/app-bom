@@ -2134,6 +2134,10 @@ function onGenerate3()
   var e = document.getElementById("thumbs-generate");
   if (e.checked == true)
     addImage = true;
+  var addIndent = false;
+  var e2 = document.getElementById("color-generate");
+  if (e2.checked == true)
+    addIndent = true;
 
   $.post("/proxy", params)
       .done(function( data ) {
@@ -2206,13 +2210,24 @@ function onGenerate3()
           for (i =0; i < Comp2Array.length; ++i) {
             if (Comp2Array[i].Count > 0) {
               var colorOverride = "";
+              var nameOverride = Comp2Array[i].Name;
               var level = Comp2Array[i].Level;
               if (Comp2Array[i].Collapse == true)
                 level++;
 
               if(Comp2Array[i].Level > 0) {
-                var rValue = 0xFFFFFF - (0x101010*Comp2Array[i].Level);
-                colorOverride = rValue.toString(16);;
+                if (addIndent) {
+                  var rValue = 0xFFFFFF - (0x101010*Comp2Array[i].Level);
+                  colorOverride = rValue.toString(16);
+                }
+
+                // Add the indention level as a tab
+                var newNameOverride = "<pre>";
+                for (var z = 0; z < Comp2Array[i].Level; ++z)
+                  newNameOverride.append("&#x09;");
+                newNameOverride.append(Comp2Array[i].Name);
+                newNameOverride.append("</pre>");
+                nameOverride = newNameOverride;
               }
 
               // Get the image to use
