@@ -65,7 +65,6 @@ app.use('/api', api);
 app.get('/', index.renderPage);
 
 app.post('/getElements', api.getElementList);
-app.post('/getStl', api.getStl);
 app.post('/getParts', api.getPartsList);
 
 // GET /oauthSignin
