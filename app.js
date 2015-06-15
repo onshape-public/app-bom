@@ -52,7 +52,7 @@ app.use(session({
   store: new RedisStore({
     'client': client
   }),
-  secret: 'app-stl-server',
+  secret: 'app-bom',
   saveUninitialized: false,
   resave: false
 }));
