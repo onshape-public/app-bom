@@ -98,6 +98,8 @@ function storeExtraParams(req, res) {
 
   StateMap[id] = state;
 
+  console.log("** ** ** STORE PARAMS - " + state);
+
   return passport.authenticate("onshape", {state: id})(req, res);
 }
 
@@ -112,6 +114,9 @@ app.use('/oauthRedirect',
       var id = req.query.state;
       var params = StateMap[id];
       var url = '/?' + 'documentId=' + params.documentId + '&workspaceId=' + params.workspaceId + '&elementId=' + params.elementId;
+
+      console.log("** ** ** REDIRECT - " + url);
+
       res.redirect(url);
     });
 
