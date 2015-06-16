@@ -39,29 +39,30 @@ function refreshContextElements() {
 
       console.log("** ** **  REFRESH ELEMENT LIST - A");
 
-      var obj = JSON.parse(data);
+      var objects = JSON.parse(data);
+      
       console.log("** ** **  REFRESH ELEMENT LIST - B");
 
       var id;
       console.log("** ** **  REFRESH ELEMENT LIST - C");
 
-      for (var i = 0; i < obj.length; ++i) {
-        console.log("** ******* Next Item " + obj[i].type);
+      for (var i = 0; i < objects.length; ++i) {
+        console.log("** ******* Next Item " + objects[i].type);
 
-        if (obj[i].type == 'ASSEMBLY') {
+        if (objects[i].type == 'ASSEMBLY') {
           $("#elt-select")
               .append(
-              "<option value='" + obj[i].elementId + "'" +
+              "<option value='" + objects[i].elementId + "'" +
               (i == 0 ? " selected" : "") +
               ">" +
-              obj[i].name + "</option>"
+              objects[i].name + "</option>"
           )
               .change(function () {
                 id = $("#elt-select option:selected").val();
                 theContext.elementId = id;
               }
           );
-          console.log("** ** **  REFRESH ELEMENT LIST - " + obj[i].name);;
+          console.log("** ** **  REFRESH ELEMENT LIST - " + objects[i].name);;
 
         }
       }
