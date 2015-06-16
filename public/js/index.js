@@ -19,34 +19,12 @@ $(document).ready(function() {
   // activate top of page tabs
   $("#dev-tabs").tabs({ active : 0 });
 
-  initSessionTab();
-  initPredefinedTab();
   initHeader();
   initNotificationsTab();
   initClientTab();
   initCategoryTab();
 
 });
-
-
-////////////////////////////////////////////////////////////////
-// return information from Onshape
-// this call is proxied through the application server
-//
-function showOnshapeInformation(params, element, altelement, altdisplay) {
-  params.sessionID = sessionID;
-  $.post("/proxy", params)
-      .done(function( data ) {
-        $(element).text(data);
-        if (altdisplay) {
-          altdisplay(data, altelement);
-//      $(altelement).text(altdisplay(data));
-        }
-      })
-      .fail(function() {
-        $(element).text("call failed");
-      })
-}
 
 ////////////////////////////////////////////////////////////////
 // return information from Onshape for a webhook call
@@ -223,22 +201,6 @@ function initHeader() {
   initContext();
 }
 
-
-////////////////////////////////////////////////////////////////
-// session tab support
-
-function initSessionTab() {
-
-  $("#session-refresh").button().click(refreshSessionInformation);
-  showLocalSessionInformation();
-}
-
-// show local session information
-function showLocalSessionInformation() {
-  $("#theURL").text(window.location.href);
-  var params = JSON.stringify(theQuery, null, "  ");
-  $("#theParams").text(params);
-}
 
 // refresh all session information
 function refreshSessionInformation() {
@@ -1315,55 +1277,6 @@ function selectPredefinedApi(idx) {
   $("#predefined-desc").html(predefs[idx].desc);
   theSelectedApi = idx;
   rebuildApiCall();
-}
-
-
-function initPredefinedTab() {
-
-  for (var i=0; i<predefs.length; ++i) {
-    $("#predefined-select")
-        .append("<option value='" + i + "'>" + predefs[i].dname + "</option>")
-        .change(function() {
-          var idx = $("#predefined-select option:selected").val();
-          selectPredefinedApi(idx);
-        });
-  }
-
-  // preselect first item
-  selectPredefinedApi(0);
-
-  // create submit button
-  $("#predefined-submit").button().click(predefinedSubmit);
-}
-
-
-// NOT USED?
-function showPredefResults(params) {
-  $("#predefined-call").text(params.method + " " + params.path + " " + params.body);
-  showOnshapeInformation(params, "#predefined-results");
-}
-
-
-function predefinedSubmit() {
-
-  // copy build data to result section
-  $("#called-name").text($("#predef-name").text());
-  $("#called-args").text(
-      $("#predef-method").val() + ' ' +
-      $("#predef-url").val() + '\n' +
-      $("#predef-body").val() );
-
-  $("#called-results").text("Calling...");
-  $("#called-altresults").text("");
-
-  var callParams = {name: 'generic', method:$("#predef-method").val(), path:$("#predef-url").val(), body:$("#predef-body").val()};
-
-  if (predefs[theSelectedApi].altDisplay) {
-    showOnshapeInformation( callParams, "#called-results", "#called-altresults", predefs[theSelectedApi].altDisplay);
-  } else {
-    showOnshapeInformation( callParams, "#called-results");
-  }
-
 }
 
 ///////////////////////////////
