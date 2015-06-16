@@ -48,7 +48,7 @@ exports.getSession = function(req, res) {
       console.log('GET /api/users/session error: ', data);
     }
   });
-});
+};
 
 exports.getDocuments = function(req, res) {
   request.get({
