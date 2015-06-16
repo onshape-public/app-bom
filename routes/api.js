@@ -73,7 +73,7 @@ exports.getDocuments = function(req, res) {
 
 router.getElementList = function(req, res) {
   console.log("******** GET ELEMENTS " + req.query.documentId);
-  
+
   request.get({
     uri: 'https://partner.dev.onshape.com/api/elements/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
     headers: {
