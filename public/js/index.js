@@ -65,7 +65,7 @@ function refreshContextElements()
 // refresh all session information
 function refreshSessionInformation() {
   var dfd = $.Deferred();
-  $.ajax('/getSession'+ window.location.search, {
+  $.ajax('/getSession', {
     dataType: 'json',
     type: 'POST',
     success: function(data) {

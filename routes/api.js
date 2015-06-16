@@ -27,27 +27,6 @@ router.post('/logout', function(req, res) {
 exports.getSession = function(req, res) {
   console.log("***** At GET SESSION");
 
-  request.get({
-    uri: 'https://partner.dev.onshape.com/api/users/session',
-    headers: {
-      'Authorization': 'Bearer ' + req.user.accessToken
-    }
-  }).then(function(data) {
-    console.log('****** Get Session - send data');
-
-    res.send(data);
-  }).catch(function(data) {
-    console.log('****** getSession - CATCH ' + data.statusCode);
-    if (data.statusCode === 401) {
-      authentication.refreshOAuthToken(req, res).then(function() {
-        router.getElementList(req, res);
-      }).catch(function(err) {
-        console.log('Error refreshing token or getting session: ', err);
-      });
-    } else {
-      console.log('GET /api/users/session error: ', data);
-    }
-  });
 };
 
 exports.getDocuments = function(req, res) {
