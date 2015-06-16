@@ -25,14 +25,27 @@ router.post('/logout', function(req, res) {
 });
 
 router.get('/getSession', function(req, res) {
-  if (req.user) {
-    res.send({userId: req.user.id});
-  } else {
-    res.status(401).send({
-      authUri: authentication.getAuthUri(),
-      msg: 'Authentication required.'
-    });
-  }
+  request.get({
+    uri: 'https://partner.dev.onshape.com/api/users/session',
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    //console.log('****** getElementList - send data');
+
+    res.send(data);
+  }).catch(function(data) {
+    console.log('****** getElementList - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        router.getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting session: ', err);
+      });
+    } else {
+      console.log('GET /api/users/session error: ', data);
+    }
+  });
 });
 
 exports.getDocuments = function(req, res) {
