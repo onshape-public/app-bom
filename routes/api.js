@@ -24,9 +24,9 @@ router.post('/logout', function(req, res) {
   return res.send({});
 });
 
-router.get('/getSession', function(req, res) {
+exports.getSession = function(req, res) {
   console.log("***** At GET SESSION");
-  
+
   request.get({
     uri: 'https://partner.dev.onshape.com/api/users/session',
     headers: {
