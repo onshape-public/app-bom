@@ -52,6 +52,8 @@ function refreshContextElements() {
                 theContext.elementId = id;
               }
           );
+          console.log("** ** **  REFRESH ELEMENT LIST - " + obj[i].name);;
+
         }
       }
       theContext.elementId = $("#elt-select option:selected").val();

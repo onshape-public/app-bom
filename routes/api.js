@@ -25,8 +25,6 @@ router.post('/logout', function(req, res) {
 });
 
 router.getSession = function(req, res) {
-  console.log("***** At GET SESSION");
-
   request.get({
     uri: 'https://partner.dev.onshape.com/api/users/session',
     headers: {
@@ -72,8 +70,6 @@ exports.getDocuments = function(req, res) {
 };
 
 router.getElementList = function(req, res) {
-  console.log("******** GET ELEMENTS " + req.query.documentId);
-
   request.get({
     uri: 'https://partner.dev.onshape.com/api/elements/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
     headers: {
