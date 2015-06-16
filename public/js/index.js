@@ -24,13 +24,16 @@ $(document).ready(function() {
 
 
 // update the list of elements in the context header
-function refreshContextElements()
-{
+function refreshContextElements() {
+  console.log("** ** **  REFRESH ELEMENT LIST");
+
   var dfd = $.Deferred();
   $.ajax('/getElementList'+ window.location.search, {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
+
+      console.log("** ** **  REFRESH ELEMENT LIST - SUCCESS");
       // for each element, create a select option to make that element the current context
       $("#elt-select").empty();
       var obj = $.parseJSON(data);
@@ -47,15 +50,15 @@ function refreshContextElements()
               .change(function () {
                 id = $("#elt-select option:selected").val();
                 theContext.elementId = id;
-                $("#elt-id").text(id);
               }
           );
         }
       }
       theContext.elementId = $("#elt-select option:selected").val();
-      $("#elt-id").text(theContext.elementId);
     },
     error: function() {
+      console.log("** ** **  REFRESH ELEMENT LIST - FAILURE");
+
       theSession = null;
     }
   });
@@ -109,6 +112,8 @@ var tZ = 0;
 function onGenerate() {
   // Destroy anything previously created ...
   $('#apis').empty();
+
+  theContext.elementId = $("#elt-select option:selected").val();
 
   // Get the bounding box size
   var bodyBox = {
