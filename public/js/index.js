@@ -39,7 +39,7 @@ function refreshContextElements() {
 
       console.log("** ** **  REFRESH ELEMENT LIST - A");
 
-      var objects = JSON.parse(data);
+      var objects = data;
       
       console.log("** ** **  REFRESH ELEMENT LIST - B");
 
