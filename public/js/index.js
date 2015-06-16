@@ -38,7 +38,9 @@ function refreshContextElements() {
       $("#elt-select").empty();
       var obj = $.parseJSON(data);
       var id;
-      for (var i=0; i<obj.length; ++i) {
+      for (var i = 0; i < obj.length; ++i) {
+        console.log("** ******* Next Item " + obj[i].type);
+        
         if (obj[i].type == 'ASSEMBLY') {
           $("#elt-select")
               .append(

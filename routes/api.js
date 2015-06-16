@@ -31,8 +31,6 @@ router.getSession = function(req, res) {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
   }).then(function(data) {
-    console.log('****** Get Session - send data');
-
     res.send(data);
   }).catch(function(data) {
     console.log('****** getSession - CATCH ' + data.statusCode);
