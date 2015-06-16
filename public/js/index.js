@@ -28,7 +28,7 @@ function refreshContextElements() {
   console.log("** ** **  REFRESH ELEMENT LIST");
 
   var dfd = $.Deferred();
-  $.ajax('/getElementList'+ window.location.search, {
+  $.ajax('/getElements'+ window.location.search, {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
