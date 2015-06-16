@@ -64,6 +64,7 @@ app.use('/api', api);
 
 app.get('/', index.renderPage);
 
+app.post('/getSession', api.getSession);
 app.post('/getElements', api.getElementList);
 app.post('/getParts', api.getPartsList);
 
