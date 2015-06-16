@@ -24,7 +24,7 @@ router.post('/logout', function(req, res) {
   return res.send({});
 });
 
-exports.getSession = function(req, res) {
+router.getSession = function(req, res) {
   console.log("***** At GET SESSION");
 
 };
