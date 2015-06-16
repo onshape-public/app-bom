@@ -36,11 +36,18 @@ function refreshContextElements() {
       console.log("** ** **  REFRESH ELEMENT LIST - SUCCESS");
       // for each element, create a select option to make that element the current context
       $("#elt-select").empty();
-      var obj = $.parseJSON(data);
+
+      console.log("** ** **  REFRESH ELEMENT LIST - A");
+
+      var obj = JSON.parse(data);
+      console.log("** ** **  REFRESH ELEMENT LIST - B");
+
       var id;
+      console.log("** ** **  REFRESH ELEMENT LIST - C");
+
       for (var i = 0; i < obj.length; ++i) {
         console.log("** ******* Next Item " + obj[i].type);
-        
+
         if (obj[i].type == 'ASSEMBLY') {
           $("#elt-select")
               .append(
