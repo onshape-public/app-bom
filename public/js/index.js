@@ -127,41 +127,40 @@ function onGenerate() {
     "body": JSON.stringify(bodyBox, null, 2)
   }
 
-  $.post("/getBoundingBox", callBoxParams)
-      .done(function (data) {
-        try {
-          var res = JSON.parse(data);
-          var xLow = res.lowX;
-          var xHigh = res.highX;
-          var yLow = res.lowY;
-          var yHigh = res.highY;
-          var zLow = res.lowZ;
-          var zHigh = res.highZ;
+  $.ajax('/getBoundingBox' + JSON.stringify(bodyBox, null, 2), {
+    dataType: 'json',
+    type: 'POST',
+    success: function(data) {
+      var res = JSON.parse(data);
+      var xLow = res.lowX;
+      var xHigh = res.highX;
+      var yLow = res.lowY;
+      var yHigh = res.highY;
+      var zLow = res.lowZ;
+      var zHigh = res.highZ;
 
-          // Get the size of the BBox
-          var xDiff = xHigh - xLow;
-          var yDiff = yHigh - yLow;
-          var zDiff = zHigh - zLow;
-          realSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
+      // Get the size of the BBox
+      var xDiff = xHigh - xLow;
+      var yDiff = yHigh - yLow;
+      var zDiff = zHigh - zLow;
+      realSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
 
-          // Find the center of the BBox - model coordinates
-          var xCenter = (xHigh + xLow) / 2;
-          var yCenter = (yHigh + yLow) / 2;
-          var zCenter = (zHigh + zLow) / 2;
+      // Find the center of the BBox - model coordinates
+      var xCenter = (xHigh + xLow) / 2;
+      var yCenter = (yHigh + yLow) / 2;
+      var zCenter = (zHigh + zLow) / 2;
 
-          tX = xCenter * 0.707 + xCenter * -0.409 + xCenter * 0.577;
-          tY = yCenter * 0.707 + yCenter * 0.409 + yCenter * -0.577;
-          tZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
+      tX = xCenter * 0.707 + xCenter * -0.409 + xCenter * 0.577;
+      tY = yCenter * 0.707 + yCenter * 0.409 + yCenter * -0.577;
+      tZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
 
-          // Now, finish the rest of the work.
-          onGenerate2();
-        }
-        catch (err) {
-        }
-      })
-      .fail(function () {
-        alert("Problem with bounding box");
-      });
+      // Now, finish the rest of the work.
+      onGenerate2();
+    },
+    error: function() {
+      theSession = null;
+    }
+  });
 }
 
 //
@@ -192,7 +191,7 @@ function generateBBox(elementId) {
     $.post("/proxy", callBoxParams)
       .done(function (data) {
         try {
-          var res = JSON.parse(data);
+          var res = data;
           var xLow = res.lowX;
           var xHigh = res.highX;
           var yLow = res.lowY;

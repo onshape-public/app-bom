@@ -95,7 +95,7 @@ router.getBoundingBox = function(req, res) {
   console.log("************ GET BOUNDING BOX JSON Body: " + req.json);
 
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/models/boundingbox/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
+    uri: 'https://partner.dev.onshape.com/api/models/boundingbox/' + req.json,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
