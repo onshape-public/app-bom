@@ -100,7 +100,6 @@ router.getBoundingBox = function(req, res) {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
   }).then(function(data) {
-    //console.log('****** getElementList - send data');
 
     res.send(data);
   }).catch(function(data) {

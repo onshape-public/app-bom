@@ -71,7 +71,7 @@ function refreshSessionInformation() {
       theSession = data;
 
       // parse returned data to set user context
-      var s = JSON.parse(data);
+      var s = data;
       theContext.userId = s.id;
     },
     error: function() {
@@ -127,10 +127,12 @@ function onGenerate() {
     "body": JSON.stringify(bodyBox, null, 2)
   }
 
-  $.ajax('/getBoundingBox' + JSON.stringify(bodyBox, null, 2), {
+  $.ajax('/getBoundingBox' + callBoxParams, {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
+      console.log("****** GET BOUNDING BOX - SUCCESS - index.js"):
+
       var res = JSON.parse(data);
       var xLow = res.lowX;
       var xHigh = res.highX;
@@ -158,7 +160,7 @@ function onGenerate() {
       onGenerate2();
     },
     error: function() {
-      theSession = null;
+      console.log("****** GET BOUNDING BOX - FAILURE - index.js"):
     }
   });
 }
