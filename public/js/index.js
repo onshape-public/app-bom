@@ -71,7 +71,7 @@ function refreshSessionInformation() {
       theSession = data;
 
       // parse returned data to set user context
-      var s = data;
+      var s = JSON.parse(data);
       theContext.userId = s.id;
     },
     error: function() {
@@ -160,7 +160,7 @@ function onGenerate() {
       onGenerate2();
     },
     error: function() {
-      console.log("****** GET BOUNDING BOX - FAILURE - index.js"):
+      console.log("****** GET BOUNDING BOX - FAILURE - index.js");
     }
   });
 }
