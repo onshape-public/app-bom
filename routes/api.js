@@ -93,7 +93,7 @@ router.getElementList = function(req, res) {
 
 router.getBoundingBox = function(req, res) {
   console.log("******* GET BBOX");
-  
+
   console.log("************ GET BOUNDING BOX JSON Body: " + req.json);
 
   request.get({

@@ -159,7 +159,7 @@ function onGenerate() {
       // Now, finish the rest of the work.
       onGenerate2();
     },
-    error: function() {
+    error: function(data) {
       console.log("****** GET BOUNDING BOX - FAILURE - index.js");
     }
   });
