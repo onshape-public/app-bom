@@ -25,30 +25,18 @@ $(document).ready(function() {
 
 // update the list of elements in the context header
 function refreshContextElements() {
-  console.log("** ** **  REFRESH ELEMENT LIST");
-
   var dfd = $.Deferred();
   $.ajax('/getElements'+ window.location.search, {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
-
-      console.log("** ** **  REFRESH ELEMENT LIST - SUCCESS");
       // for each element, create a select option to make that element the current context
       $("#elt-select").empty();
 
-      console.log("** ** **  REFRESH ELEMENT LIST - A");
-
       var objects = data;
-      
-      console.log("** ** **  REFRESH ELEMENT LIST - B");
-
       var id;
-      console.log("** ** **  REFRESH ELEMENT LIST - C");
 
       for (var i = 0; i < objects.length; ++i) {
-        console.log("** ******* Next Item " + objects[i].type);
-
         if (objects[i].type == 'ASSEMBLY') {
           $("#elt-select")
               .append(
@@ -62,15 +50,11 @@ function refreshContextElements() {
                 theContext.elementId = id;
               }
           );
-          console.log("** ** **  REFRESH ELEMENT LIST - " + objects[i].name);;
-
         }
       }
       theContext.elementId = $("#elt-select option:selected").val();
     },
     error: function() {
-      console.log("** ** **  REFRESH ELEMENT LIST - FAILURE");
-
       theSession = null;
     }
   });
@@ -143,7 +127,7 @@ function onGenerate() {
     "body": JSON.stringify(bodyBox, null, 2)
   }
 
-  $.post("/proxy", callBoxParams)
+  $.post("/getBoundingBox", callBoxParams)
       .done(function (data) {
         try {
           var res = JSON.parse(data);

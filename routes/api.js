@@ -24,6 +24,11 @@ router.post('/logout', function(req, res) {
   return res.send({});
 });
 
+router.getBoundingBox = function(req, res) {
+
+  console.log("********* GET BOUNDING BOX");
+};
+
 router.getSession = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/users/session',
@@ -70,6 +75,30 @@ exports.getDocuments = function(req, res) {
 router.getElementList = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/elements/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    //console.log('****** getElementList - send data');
+
+    res.send(data);
+  }).catch(function(data) {
+    console.log('****** getElementList - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        router.getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting elements: ', err);
+      });
+    } else {
+      console.log('GET /api/documents/elements error: ', data);
+    }
+  });
+};
+
+router.getBoundingBox = function(req, res) {
+  request.get({
+    uri: 'https://partner.dev.onshape.com/api/models/boundingbox/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
