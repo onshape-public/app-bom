@@ -92,12 +92,9 @@ router.getElementList = function(req, res) {
 };
 
 router.getBoundingBox = function(req, res) {
-  console.log("******* GET BBOX");
-
-  console.log("************ GET BOUNDING BOX JSON Body: " + req.json);
-
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/models/boundingbox/' + req.json,
+    uri: 'https://partner.dev.onshape.com/api/assemblies/document/' + req.query.documentId +
+          '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId + '/boundingbox/',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -105,7 +102,7 @@ router.getBoundingBox = function(req, res) {
 
     res.send(data);
   }).catch(function(data) {
-    console.log('****** getElementList - CATCH ' + data.statusCode);
+    console.log('****** getBoundingBox - CATCH ' + data.statusCode);
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
         router.getElementList(req, res);
@@ -113,7 +110,7 @@ router.getBoundingBox = function(req, res) {
         console.log('Error refreshing token or getting elements: ', err);
       });
     } else {
-      console.log('GET /api/documents/elements error: ', data);
+      console.log('GET /api/assemblies/boundingbox error: ', data);
     }
   });
 };
@@ -135,6 +132,27 @@ router.getPartsList = function(req, res) {
       });
     } else {
       console.log('GET /api/parts/workspace error: ', data);
+    }
+  });
+};
+
+router.getAssemblyDefinition = function(req, res) {
+  request.get({
+    uri: 'https://partner.dev.onshape.com/api/models/assembly/definition/' + req.query.documentId + "/workspace/" + req.query.workspaceId + "/element" + req.query.nextElement + "?includeMateFeatures=false",
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getDocuments(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting definition: ', err);
+      });
+    } else {
+      console.log('GET /api/models/assembly/definition error: ', data);
     }
   });
 };

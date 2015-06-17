@@ -68,6 +68,7 @@ app.post('/getSession', api.getSession);
 app.post('/getElements', api.getElementList);
 app.post('/getParts', api.getPartsList);
 app.post('/getBoundingBox', api.getBoundingBox);
+app.post('/getDefinition', api.getAssemblyDefinition);
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the

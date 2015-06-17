@@ -112,22 +112,7 @@ function onGenerate() {
   theContext.elementId = $("#elt-select option:selected").val();
 
   // Get the bounding box size
-  var bodyBox = {
-    "documentId": theContext.documentId,
-    "elementId": theContext.elementId,
-    "workspaceId": theContext.workspaceId,
-    "partQuery": null,
-    "includeHidden": false
-  }
-  var callBoxParams = {
-    "name": "generic",
-    "method": "POST",
-    "path": "/api/models/boundingbox",
-    "sessionID": sessionID,
-    "body": JSON.stringify(bodyBox, null, 2)
-  }
-
-  $.ajax('/getBoundingBox' + callBoxParams, {
+  $.ajax('/getBoundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + theContext.elementId, {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
@@ -286,35 +271,32 @@ function generateThumbs(argMap) {
 }
 
 function findAssemblies(resolve, reject) {
-  var path = "/api/elements/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "?withThumbnails:false";
-  var params = {name:"generic", method:"GET", path: path};
-  params.sessionID = sessionID;
-
-  $.post("/proxy", params)
-      .done(function( data ) {
-        try {
-          // for each element, create a select option to make that element the current context
-          var obj = $.parseJSON(data);
-          var id;
-          for (var i = 0; i < obj.length; ++i) {
-            if (obj[i].type == 'ASSEMBLY') {
-              // Add this to the list of assemblies
-              SubAsmArray[SubAsmArray.length] = {
-                Element: obj[i].elementId,
-                Count: 0,
-                Handled: false,
-                Name : obj[i].name,
-                Components : []
-              }
-            }
+  $.ajax('/getElements'+ window.location.search, {
+    dataType: 'json',
+    type: 'POST',
+    success: function(data) {
+      // for each element, create a select option to make that element the current context
+      var obj = data;
+      var id;
+      for (var i = 0; i < obj.length; ++i) {
+        if (obj[i].type == 'ASSEMBLY') {
+          // Add this to the list of assemblies
+          SubAsmArray[SubAsmArray.length] = {
+            Element: obj[i].elementId,
+            Count: 0,
+            Handled: false,
+            Name : obj[i].name,
+            Components : []
           }
+        }
+      }
 
-          resolve(SubAsmArray);
-        }
-        catch (err) {
-          reject("Problem fetching elements");
-        }
-      });
+      resolve(SubAsmArray);
+    },
+    error: function() {
+      reject("Problem fetching elements");
+    }
+  });
 }
 
 function saveComponentToList(asmIndex, itemName, asmElementId, partElementId) {
@@ -343,52 +325,50 @@ function saveComponentToList(asmIndex, itemName, asmElementId, partElementId) {
 }
 
 function findComponents(resolve, reject, nextElement, asmIndex) {
-  // Use the new API to pull component and sub-assembly info
-  var topPath = "/api/models/assembly/definition/" + theContext.documentId + "/workspace/" + theContext.workspaceId + "/element/" + nextElement + "?includeMateFeatures=false";
-  var topParams = {name:"generic", method:"GET", path: topPath};
-  topParams.sessionID = sessionID;
+  $.ajax('/getDefinition'+ window.location.search + '&nextElement=' + nextElement, {
+    dataType: 'json',
+    type: 'POST',
+    success: function(data) {
+      var compData = data;
 
-  $.post("/proxy", topParams)
-      .done(function(data) {
-        var compData = JSON.parse(data);
+      // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
+      for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
+        if (compData.rootAssembly.instances[i].type == "Part") {
+          var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
+          var itemName = compData.rootAssembly.instances[i].name;
+          if (bracketIndex > -1)
+            itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
-        // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
-        for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
-          if (compData.rootAssembly.instances[i].type == "Part") {
-            var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
-            var itemName = compData.rootAssembly.instances[i].name;
-            if (bracketIndex > -1)
-              itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
+          // Search through the list of components to find a match
+          saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
+        }
+      }
 
-            // Search through the list of components to find a match
-            saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
+      // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
+      for (var z = 0; z < compData.subAssemblies.length; ++z) {
+        var subElementId = compData.subAssemblies[z].elementId;
+        var found = false;
+        var asmName;
+        for (var n = 0; n < SubAsmArray.length; ++n) {
+          if (subElementId == SubAsmArray[n].Element) {
+            SubAsmArray[n].Count++;
+            found = true;
+            asmName = SubAsmArray[n].Name;
+            break;
           }
         }
 
-        // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
-        for (var z = 0; z < compData.subAssemblies.length; ++z) {
-          var subElementId = compData.subAssemblies[z].elementId;
-          var found = false;
-          var asmName;
-          for (var n = 0; n < SubAsmArray.length; ++n) {
-            if (subElementId == SubAsmArray[n].Element) {
-              SubAsmArray[n].Count++;
-              found = true;
-              asmName = SubAsmArray[n].Name;
-              break;
-            }
-          }
+        // Save this as a 'component' in the list too
+        if (found == true)
+          saveComponentToList(asmIndex, asmName, subElementId, 0);
+      }
 
-          // Save this as a 'component' in the list too
-          if (found == true)
-            saveComponentToList(asmIndex, asmName, subElementId, 0);
-        }
-
-        resolve(asmIndex);
-      })
-      .fail(function(data) {
-        reject("Error finding components for assembly");
-      });
+      resolve(asmIndex);
+    },
+    error: function() {
+      reject("Error finding components for assembly");
+    }
+  });
 }
 
 // Second half to the generate function ... need the bounding box results first
@@ -694,6 +674,38 @@ function onGenerate3()
   if (e2.checked == true)
     addIndent = true;
 
+  $.ajax('/getElements'+ window.location.search, {
+    dataType: 'json',
+    type: 'POST',
+    success: function(data) {
+      // for each element, create a select option to make that element the current context
+      $("#elt-select").empty();
+
+      var objects = data;
+      var id;
+
+      for (var i = 0; i < objects.length; ++i) {
+        if (objects[i].type == 'ASSEMBLY') {
+          $("#elt-select")
+              .append(
+              "<option value='" + objects[i].elementId + "'" +
+              (i == 0 ? " selected" : "") +
+              ">" +
+              objects[i].name + "</option>"
+          )
+              .change(function () {
+                id = $("#elt-select option:selected").val();
+                theContext.elementId = id;
+              }
+          );
+        }
+      }
+      theContext.elementId = $("#elt-select option:selected").val();
+    },
+    error: function() {
+      theSession = null;
+    }
+  });
   $.post("/proxy", params)
       .done(function( data ) {
         try {
