@@ -24,11 +24,6 @@ router.post('/logout', function(req, res) {
   return res.send({});
 });
 
-router.getBoundingBox = function(req, res) {
-
-  console.log("********* GET BOUNDING BOX");
-};
-
 router.getSession = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/users/session',
@@ -97,6 +92,8 @@ router.getElementList = function(req, res) {
 };
 
 router.getBoundingBox = function(req, res) {
+  console.log("************ GET BOUNDING BOX JSON Body: " + req.json);
+
   request.get({
     uri: 'https://partner.dev.onshape.com/api/models/boundingbox/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
     headers: {
