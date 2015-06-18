@@ -164,7 +164,7 @@ router.getPartsList = function(req, res) {
 
 router.getAssemblyDefinition = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/models/assembly/definition/' + req.query.documentId + "/workspace/" + req.query.workspaceId + "/element/" + req.query.nextElement + "?includeMateFeatures=false",
+    uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId + "/w/" + req.query.workspaceId + "/e/" + req.query.nextElement + "?includeMateFeatures=false",
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
