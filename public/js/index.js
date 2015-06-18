@@ -629,7 +629,7 @@ function onGenerate3()
     type: 'POST',
     success: function(data) {
       // Find all components of the assembly
-      var obj = $.parseJSON(data);
+      var obj = data;
       theContext.parts = obj;       // remember details to use in api calls later
 
       // Keep a count of repeated components
