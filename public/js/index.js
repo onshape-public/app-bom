@@ -71,7 +71,7 @@ function refreshSessionInformation() {
       theSession = data;
 
       // parse returned data to set user context
-      var s = JSON.parse(data);
+      var s = data;
       theContext.userId = s.id;
     },
     error: function() {
@@ -118,7 +118,7 @@ function onGenerate() {
     success: function(data) {
       console.log("****** GET BOUNDING BOX - SUCCESS - index.js");
 
-      var res = JSON.parse(data);
+      var res = data;
       var xLow = res.lowX;
       var xHigh = res.highX;
       var yLow = res.lowY;
@@ -220,7 +220,7 @@ function generateThumbs(argMap) {
       dataType: 'json',
       type: 'POST',
       success: function(data) {
-        var res = JSON.parse(data);
+        var res = data;
         if (res.images.length > 0) {
           ImagesArray[ImagesArray.length] = {
             Image : res.images[0],
