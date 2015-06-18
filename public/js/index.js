@@ -371,7 +371,6 @@ function onGenerate2() {
   });
 
 // Create block dom
-
   this.block = $('<div class="block" position="relative"></div>');
   this.block.attr("bom", "bom")
   this.block.append(ResultImage);

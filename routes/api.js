@@ -94,7 +94,7 @@ router.getElementList = function(req, res) {
 router.getShadedView = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/drawings/shaded/' + req.query.documentId +
-    '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId + '/boundingboxes/',
+    '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
