@@ -69,6 +69,7 @@ app.post('/getElements', api.getElementList);
 app.post('/getParts', api.getPartsList);
 app.post('/getBoundingBox', api.getBoundingBox);
 app.post('/getDefinition', api.getAssemblyDefinition);
+app.post('/getShadedView', api.getShadedView);
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the

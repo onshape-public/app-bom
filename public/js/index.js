@@ -160,58 +160,41 @@ var ThumbPromises = [];
 function generateBBox(elementId) {
   return new Promise(function(resolve, reject) {
     // Get the bounding box size
-    var bodyBox = {
-      "documentId": theContext.documentId,
-      "elementId": elementId,
-      "workspaceId": theContext.workspaceId,
-      "partQuery": null,
-      "includeHidden": false
-    }
-    var callBoxParams = {
-      "name": "generic",
-      "method": "POST",
-      "path": "/api/models/boundingbox",
-      "sessionID": sessionID,
-      "body": JSON.stringify(bodyBox, null, 2)
-    }
+    $.ajax('/getBoundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + elementId, {
+      dataType: 'json',
+      type: 'POST',
+      success: function(data) {
+        var res = data;
+        var xLow = res.lowX;
+        var xHigh = res.highX;
+        var yLow = res.lowY;
+        var yHigh = res.highY;
+        var zLow = res.lowZ;
+        var zHigh = res.highZ;
 
-    $.post("/proxy", callBoxParams)
-      .done(function (data) {
-        try {
-          var res = data;
-          var xLow = res.lowX;
-          var xHigh = res.highX;
-          var yLow = res.lowY;
-          var yHigh = res.highY;
-          var zLow = res.lowZ;
-          var zHigh = res.highZ;
+        // Get the size of the BBox
+        var xDiff = xHigh - xLow;
+        var yDiff = yHigh - yLow;
+        var zDiff = zHigh - zLow;
+        bSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
 
-          // Get the size of the BBox
-          var xDiff = xHigh - xLow;
-          var yDiff = yHigh - yLow;
-          var zDiff = zHigh - zLow;
-          bSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
+        // Find the center of the BBox - model coordinates
+        var xCenter = (xHigh + xLow) / 2;
+        var yCenter = (yHigh + yLow) / 2;
+        var zCenter = (zHigh + zLow) / 2;
 
-          // Find the center of the BBox - model coordinates
-          var xCenter = (xHigh + xLow) / 2;
-          var yCenter = (yHigh + yLow) / 2;
-          var zCenter = (zHigh + zLow) / 2;
+        var bX = xCenter * 0.707 + xCenter * -0.409 + xCenter * 0.577;
+        var bY = yCenter * 0.707 + yCenter * 0.409 + yCenter * -0.577;
+        var bZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
 
-          var bX = xCenter * 0.707 + xCenter * -0.409 + xCenter * 0.577;
-          var bY = yCenter * 0.707 + yCenter * 0.409 + yCenter * -0.577;
-          var bZ = zCenter * 0 + zCenter * 0.816 + zCenter * 0.577;
-
-          // Now, finish the rest of the work.
-          generateThumbs({'Element' : elementId, 'xCtr' : bX, 'yCtr' : bY, 'zCtr' : bZ, 'size' : bSize });
-          resolve(1);
-        }
-        catch (err) {
-          reject(1);
-        }
-      })
-      .fail(function () {
-          reject(1);
-      });
+        // Now, finish the rest of the work.
+        generateThumbs({'Element' : elementId, 'xCtr' : bX, 'yCtr' : bY, 'zCtr' : bZ, 'size' : bSize });
+        resolve(1);
+      },
+      error: function(data) {
+        reject(1);
+      }
+    });
   });
 }
 
@@ -227,44 +210,29 @@ function generateThumbs(argMap) {
     var zCtr = argMap.zCtr;
     var size = argMap.size;
 
-    var body = {
-    "documentId": theContext.documentId,
-    "elementId": elementId,
-    "workspaceId": theContext.workspaceId,
-    "viewMatrix": [0.707, 0.707, 0, xCtr, -0.409, 0.409, 0.816, yCtr, 0.577, -0.577, 0.577, zCtr],
-    "outputHeight": 50,
-    "outputWidth": 50,
-    "pixelSize": size / 50
-  }
-  var callParams = {
-    "name": "generic",
-    "method": "POST",
-    "path": "/api/drawings/shaded",
-    "sessionID": sessionID,
-    "body": JSON.stringify(body, null, 2)
-  }
+    var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + elementId +
+        "&outputHeight=50&outputWidth=50&pixelSize=" + realSize / 50 +
+        "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0 + "&viewMatrix=" + xCtr +
+        "&viewMatrix=" + (-0.409) + "&viewMatrix=" + 0.409 + "&viewMatrix=" + 0.816 + "&viewMatrix=" + yCtr +
+        "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-0.577) + "&viewMatrix=" + 0.577 + "&viewMatrix=" + zCtr;
 
-  var imageString = "";
-
-  $.post("/proxy", callParams)
-      .done(function (data) {
-        try {
-          var res = JSON.parse(data);
-          if (res.images.length > 0) {
-            ImagesArray[ImagesArray.length] = {
-              Image : res.images[0],
-              Element : elementId
-            }
+    $.ajax('/getShadedView'+ options, {
+      dataType: 'json',
+      type: 'POST',
+      success: function(data) {
+        var res = JSON.parse(data);
+        if (res.images.length > 0) {
+          ImagesArray[ImagesArray.length] = {
+            Image : res.images[0],
+            Element : elementId
           }
-          resolve(1);
         }
-        catch (err) {
-          reject(0);
-        }
-      })
-      .fail(function () {
-        resolve(0);
-      });
+        resolve(1);
+      },
+      error: function() {
+        reject(0);
+      }
+    });
   });
 
   ThumbPromises.push(thumb);
@@ -377,43 +345,30 @@ function onGenerate2() {
   ResultImage = $('<div style="float:right"></div>');
   ResultImage.addClass('ResultImage');
 
-  var body = {
-    "documentId": theContext.documentId,
-    "elementId": theContext.elementId,
-    "workspaceId": theContext.workspaceId,
-    "viewMatrix": [0.707, 0.707, 0, -tX, -0.409, 0.409, 0.816, -tY, 0.577, -0.577, 0.577, -tZ],
-    "outputHeight": 600,
-    "outputWidth": 600,
-    "pixelSize": realSize / 600
-  }
-  var callParams = {
-    "name": "generic",
-    "method": "POST",
-    "path": "/api/drawings/shaded",
-    "sessionID": sessionID,
-    "body": JSON.stringify(body, null, 2)
-  }
+  var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId +
+          "&outputHeight=600&outputWidth=600&pixelSize=" + realSize / 600 +
+          "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0 + "&viewMatrix=" + (-tX) +
+          "&viewMatrix=" + (-0.409) + "&viewMatrix=" + 0.409 + "&viewMatrix=" + 0.816 + "&viewMatrix=" + (-tY) +
+          "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-0.577) + "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-tZ);
 
-  var imageString = "";
+  $.ajax('/getShadedView'+ options, {
+    dataType: 'json',
+    type: 'POST',
+    success: function(data) {
+      var res = data;
+      if (res.images.length > 0) {
+        var image = res.images[0];
+        ResultImage.append("<img alt='shaded view' src='data:image/png;base64," + image + "' />");
+      }
+      else {
+        imageString = "<img alt='An image' src='http://i.imgur.com/lEyLDtn.jpg' width=550 height=244 />";
+        ResultImage.append(imageString);
+      }
+    },
+    error: function() {
 
-  $.post("/proxy", callParams)
-      .done(function (data) {
-        try {
-          var res = JSON.parse(data);
-          if (res.images.length > 0) {
-            var image = res.images[0];
-            ResultImage.append("<img alt='shaded view' src='data:image/png;base64," + image + "' />");
-          }
-          else {
-            imageString = "<img alt='An image' src='http://i.imgur.com/lEyLDtn.jpg' width=550 height=244 />";
-            ResultImage.append(imageString);
-          }
-        }
-        catch (err) {
-        }
-      })
-      .fail(function () {
-      });
+    }
+  });
 
 // Create block dom
 
@@ -678,171 +633,138 @@ function onGenerate3()
     dataType: 'json',
     type: 'POST',
     success: function(data) {
-      // for each element, create a select option to make that element the current context
-      $("#elt-select").empty();
+      // Find all components of the assembly
+      var obj = $.parseJSON(data);
+      theContext.parts = obj;       // remember details to use in api calls later
 
-      var objects = data;
-      var id;
+      // Keep a count of repeated components
+      var compArray = {};
+      var compSize = 0;
+      for (var i = 0; i < obj.length; ++i) {
+        var itemName = obj[i].name;
+        var partNumber = obj[i].partNumber;
+        var revision = obj[i].revision;
 
-      for (var i = 0; i < objects.length; ++i) {
-        if (objects[i].type == 'ASSEMBLY') {
-          $("#elt-select")
-              .append(
-              "<option value='" + objects[i].elementId + "'" +
-              (i == 0 ? " selected" : "") +
-              ">" +
-              objects[i].name + "</option>"
-          )
-              .change(function () {
-                id = $("#elt-select option:selected").val();
-                theContext.elementId = id;
-              }
-          );
+        if (itemName.lastIndexOf("Surface") == -1) {
+          // Search through the list of components to find a match
+          var found = false;
+          for (var x = 0; x < compSize; ++x) {
+            if (compArray[x].Name == itemName) {
+              compArray[x].Count++;
+              found = true;
+
+              if (partNumber != null)
+                compArray[x].PartNumber = partNumber;
+              if (revision != null)
+                compArray[x].Revision = revision;
+
+              // Found a match or a place to put this component, kick out of the search
+              if (isFlat)
+                break;
+            }
+          }
+
+          // Update the master list of information with PartNumber/Revision
+          for (x = 0; x < Comp2Array.length; ++x) {
+            if (Comp2Array[x].Name == itemName) {
+              if (partNumber != null)
+                Comp2Array[x].PartNumber = partNumber;
+              if (revision != null)
+                Comp2Array[x].Revision = revision;
+
+              // Found a match or a place to put this component, kick out of the search
+              if (isFlat)
+                break;
+            }
+          }
+
+          // If we didn't find an entry for this, add it at the end.
+          if (found != true) {
+            if (partNumber == null)
+              partNumber = "-";
+            if (revision == null)
+              revision = "1.0";
+            compArray[compSize] = {
+              Name: itemName,
+              Count: 1,
+              PartNumber: partNumber,
+              Revision: revision
+            }
+            compSize++;
+          }
         }
       }
-      theContext.elementId = $("#elt-select option:selected").val();
+
+      // Now that our list is condensed (possibly), kick it out to the second version of the table
+      var currentItemNumber = 0;
+      var currentSubItemNumber = 0;
+      for (i = 0; i < Comp2Array.length; ++i) {
+        if (Comp2Array[i].Count > 0) {
+          var colorOverride = "";
+          var nameOverride = Comp2Array[i].Name;
+          var level = Comp2Array[i].Level;
+          if (Comp2Array[i].Collapse == true)
+            level++;
+
+          if (Comp2Array[i].Level > 0) {
+            if (addIndent) {
+              var rValue = 0xFFFFFF - (0x101010 * Comp2Array[i].Level);
+              colorOverride = rValue.toString(16);
+            }
+
+            // Add the indention level as a tab
+            var newNameOverride = "<pre>";
+            for (var z = 0; z < Comp2Array[i].Level; ++z)
+              newNameOverride.append("&#x09;");
+            newNameOverride.append(Comp2Array[i].Name);
+            newNameOverride.append("</pre>");
+            nameOverride = newNameOverride;
+          }
+
+          // Get the image to use
+          var imageString = "";
+          for (var im = 0; im < ImagesArray.length; ++im) {
+            if (ImagesArray[im].Element == Comp2Array[i].AsmElementId ||
+                ImagesArray[im].Element == Comp2Array[i].ElementId) {
+              var image = ImagesArray[im].Image;
+              imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
+              break;
+            }
+          }
+
+          var totalImageString = "";
+          if (addImage)
+            totalImageString = "<td>" + imageString + "</td>";
+
+          //  ResultTable.append("<tr></tr>");
+          if (Comp2Array[i].Collapse == true) {
+            ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
+            "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+            "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+            currentSubItemNumber = 0;
+            currentItemNumber++;
+          }
+          else if (Comp2Array[i].Level == 0) {
+            ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
+            "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+            "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+            currentItemNumber++;
+          }
+          else {
+            ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
+            "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
+            "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
+            currentSubItemNumber++;
+          }
+        }
+        // Once we hit a 0 count, that means we are done with our list
+        else
+          continue;
+      }
     },
     error: function() {
-      theSession = null;
     }
   });
-  $.post("/proxy", params)
-      .done(function( data ) {
-        try {
-          // Find all components of the assembly
-          var obj = $.parseJSON(data);
-          theContext.parts = obj;       // remember details to use in api calls later
-
-          // Keep a count of repeated components
-          var compArray = {};
-          var compSize = 0;
-          for (var i = 0; i < obj.length; ++i) {
-            var itemName = obj[i].name;
-            var partNumber = obj[i].partNumber;
-            var revision = obj[i].revision;
-
-            if (itemName.lastIndexOf("Surface") == -1) {
-              // Search through the list of components to find a match
-              var found = false;
-              for (var x = 0; x < compSize; ++x){
-                if (compArray[x].Name == itemName) {
-                  compArray[x].Count++;
-                  found = true;
-
-                  if (partNumber != null)
-                    compArray[x].PartNumber = partNumber;
-                  if (revision != null)
-                    compArray[x].Revision = revision;
-
-                  // Found a match or a place to put this component, kick out of the search
-                  if (isFlat)
-                    break;
-                }
-              }
-
-              // Update the master list of information with PartNumber/Revision
-              for (x = 0; x < Comp2Array.length; ++x) {
-                if (Comp2Array[x].Name == itemName) {
-                  if (partNumber != null)
-                    Comp2Array[x].PartNumber = partNumber;
-                  if (revision != null)
-                    Comp2Array[x].Revision = revision;
-
-                  // Found a match or a place to put this component, kick out of the search
-                  if (isFlat)
-                    break;
-                }
-              }
-
-              // If we didn't find an entry for this, add it at the end.
-              if (found != true) {
-                if (partNumber == null)
-                  partNumber = "-";
-                if (revision == null)
-                  revision = "1.0";
-                compArray[compSize] = {
-                  Name : itemName,
-                  Count : 1,
-                  PartNumber : partNumber,
-                  Revision : revision
-                }
-                compSize++;
-              }
-            }
-          }
-
-          // Now that our list is condensed (possibly), kick it out to the second version of the table
-          var currentItemNumber = 0;
-          var currentSubItemNumber = 0;
-          for (i =0; i < Comp2Array.length; ++i) {
-            if (Comp2Array[i].Count > 0) {
-              var colorOverride = "";
-              var nameOverride = Comp2Array[i].Name;
-              var level = Comp2Array[i].Level;
-              if (Comp2Array[i].Collapse == true)
-                level++;
-
-              if(Comp2Array[i].Level > 0) {
-                if (addIndent) {
-                  var rValue = 0xFFFFFF - (0x101010*Comp2Array[i].Level);
-                  colorOverride = rValue.toString(16);
-                }
-
-                // Add the indention level as a tab
-                var newNameOverride = "<pre>";
-                for (var z = 0; z < Comp2Array[i].Level; ++z)
-                  newNameOverride.append("&#x09;");
-                newNameOverride.append(Comp2Array[i].Name);
-                newNameOverride.append("</pre>");
-                nameOverride = newNameOverride;
-              }
-
-              // Get the image to use
-              var imageString = "";
-              for (var im = 0; im < ImagesArray.length; ++im) {
-                if (ImagesArray[im].Element == Comp2Array[i].AsmElementId ||
-                    ImagesArray[im].Element == Comp2Array[i].ElementId) {
-                  var image = ImagesArray[im].Image;
-                  imageString = "<img alt='shaded view' src='data:image/png;base64," + image + "' />";
-                  break;
-                }
-              }
-
-              var totalImageString = "";
-              if (addImage)
-                totalImageString = "<td>" + imageString + "</td>";
-
-              //  ResultTable.append("<tr></tr>");
-              if (Comp2Array[i].Collapse == true) {
-                ResultTable.append("<tr data-depth='"+ Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
-                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
-                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
-                currentSubItemNumber = 0;
-                currentItemNumber++;
-              }
-              else if (Comp2Array[i].Level == 0) {
-                ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
-                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
-                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
-                currentItemNumber++;
-              }
-              else {
-                ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td> </td><td>" + (currentSubItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
-                "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
-                "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
-                currentSubItemNumber++;
-              }
-            }
-            // Once we hit a 0 count, that means we are done with our list
-            else
-              continue;
-          }
-        }
-        catch (err) {
-        }
-      });
-
-
 }
 
 //

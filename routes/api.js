@@ -91,6 +91,30 @@ router.getElementList = function(req, res) {
   });
 };
 
+router.getShadedView = function(req, res) {
+  request.get({
+    uri: 'https://partner.dev.onshape.com/api/drawings/shaded/' + req.query.documentId +
+    '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId + '/boundingboxes/',
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+
+    res.send(data);
+  }).catch(function(data) {
+
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        router.getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting elements: ', err);
+      });
+    } else {
+      console.log('GET /api/assemblies/boundingbox error: ', data);
+    }
+  });
+};
+
 router.getBoundingBox = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/assemblies/document/' + req.query.documentId +
@@ -104,7 +128,7 @@ router.getBoundingBox = function(req, res) {
   }).catch(function(data) {
     console.log('****** getBoundingBox - CATCH ' + data.statusCode);
     console.log('****** getBoundingBox - CATCH ' + data);
-    
+
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
         router.getElementList(req, res);
