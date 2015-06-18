@@ -126,9 +126,6 @@ router.getBoundingBox = function(req, res) {
 
     res.send(data);
   }).catch(function(data) {
-    console.log('****** getBoundingBox - CATCH ' + data.statusCode);
-    console.log('****** getBoundingBox - CATCH ' + data);
-
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
         router.getElementList(req, res);

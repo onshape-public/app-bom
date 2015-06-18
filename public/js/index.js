@@ -116,8 +116,6 @@ function onGenerate() {
     dataType: 'json',
     type: 'POST',
     success: function(data) {
-      console.log("****** GET BOUNDING BOX - SUCCESS - index.js");
-
       var res = data;
       var xLow = res.lowX;
       var xHigh = res.highX;
