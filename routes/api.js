@@ -93,8 +93,12 @@ router.getElementList = function(req, res) {
 
 router.getShadedView = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/drawings/shaded/' + req.query.documentId +
-    '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId,
+    uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId +
+    '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + 'shadedviews?' +
+    '&outputHeight=' + req.qeury.outputHeight + '&outputWidth=' + req.query.outputWidth + '&pixelSize=' + req.query.pixelSize +
+    '&viewMatrix=' + req.query.viewMatrix1 + '&viewMatrix=' + req.query.viewMatrix2 + '&viewMatrix=' + req.query.viewMatrix3 + '&viewMatrix=' + req.query.viewMatrix4 +
+    '&viewMatrix=' + req.query.viewMatrix5 + '&viewMatrix=' + req.query.viewMatrix6 + '&viewMatrix=' + req.query.viewMatrix7 + '&viewMatrix=' + req.query.viewMatrix8 +
+    '&viewMatrix=' + req.query.viewMatrix9 + '&viewMatrix=' + req.query.viewMatrix10 + '&viewMatrix=' + req.query.viewMatrix11 + '&viewMatrix=' + req.query.viewMatrix12,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }

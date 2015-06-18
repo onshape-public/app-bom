@@ -210,9 +210,9 @@ function generateThumbs(argMap) {
 
     var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + elementId +
         "&outputHeight=50&outputWidth=50&pixelSize=" + realSize / 50 +
-        "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0 + "&viewMatrix=" + xCtr +
-        "&viewMatrix=" + (-0.409) + "&viewMatrix=" + 0.409 + "&viewMatrix=" + 0.816 + "&viewMatrix=" + yCtr +
-        "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-0.577) + "&viewMatrix=" + 0.577 + "&viewMatrix=" + zCtr;
+        "&viewMatrix1=" + 0.707 + "&viewMatrix2=" + 0.707 + "&viewMatrix3=" + 0 + "&viewMatrix4=" + xCtr +
+        "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + yCtr +
+        "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + zCtr;
 
     $.ajax('/getShadedView'+ options, {
       dataType: 'json',
