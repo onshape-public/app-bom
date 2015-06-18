@@ -117,8 +117,8 @@ router.getShadedView = function(req, res) {
 
 router.getBoundingBox = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/assemblies/document/' + req.query.documentId +
-          '/workspace/' + req.query.workspaceId + '/element/' + req.query.elementId + '/boundingboxes/',
+    uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId +
+          '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/boundingboxes/',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
