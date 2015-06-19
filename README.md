@@ -10,7 +10,10 @@ Go to your [app preferences](https://partner.dev.onshape.com/). Click the "Creat
 * **URL**: https://secret-ocean-9124.herokuapp.com/oauthSignin
 * **Base HREF**: You can leave this blank
 
-Currently this sample app has set and deployed in a way that when app is created Onshape sends request to app server with the required document id, workspace id and element id as queryparam. In other case (not supported in this version), it can also be implementation in a way that sends request to Onshape for getting list of documents/ elements/parts and then user can pick from list to view said data.  
+This app requires to be run in a tab of Onshape, an iFrame. In this type of configuration, Onshape will pass documentId, workspaceId and elementId as query params to the frame. These are utilized by the BOM app to give it context of what the active document is within Onshape. 
+
+BOM could also be written to run independently of the tab in Onshape. It could connect to Onshape and get a list of documents for the currently logged in user and then allow the user to select which one to work with.
+  
 
 ####**Deploying to Heroku**
 Make sure you have Node.js and the Heroku Toolbelt installed. You will also need heroku account [signup for free] (https://www.heroku.com/) 
@@ -31,9 +34,30 @@ Execute the following commands to create a duplicate of a repository, you need t
 ######deploy your repo on heroku
     $ git clone https://github.com/exampleuser/new-respository.git  
     $ heroku create
+
+Send the URL that Heroku produces for the new app to api-support@onshape.com, Onshape will register the app on Partner server and send back the OAUTH ID/Secret which are required for authentication.
+
     $ git push heroku master
 
-Send the URL to api-support@onshape.com, Onshape will register the app on Partner server and send back the ID/Secret 
+You will need to set the ID and Secret as environment variables on the server. These are only visible to the app running on the server preserving security of that information.
+
+    $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app>
+    $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app>
+
+You can verify that they are set by calling this:
+
+    $ heroku config
+
+One more step before you can use this app sample with Onshape. It requires RedisTOGO. 
+
+    $ heroku addons:create redistogo
+
+If you are new to Heroku, it may complain the first time you do this for an app requiring you to add credit card info as a payment source for potential server traffic. Don't worry, you can select the level of service for RedisTOGO and the base level is free (no cost). The payment source is required in case the service is scaled up to handle a large number of users. You do this via www.heroku.com.
+
+Use heroku config again to verify that RedisTOGO is setup. You'll see this in the config.
+
+    REDISTOGO_URL:        redis://redistogo:bb0854dd586250250969a8b0ea4aa695@hammerjaw.redistogo.com:11093/
+    
 
 
 #####**Reference Documentation**
