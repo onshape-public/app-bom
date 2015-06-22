@@ -69,7 +69,7 @@ exports.getDocuments = function(req, res) {
 
 router.getElementList = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/elements/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
+    uri: 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -144,7 +144,7 @@ router.getBoundingBox = function(req, res) {
 
 router.getPartsList = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/parts/' + req.query.documentId + "/workspace/" + req.query.workspaceId,
+    uri: 'https://partner.dev.onshape.com/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -165,7 +165,7 @@ router.getPartsList = function(req, res) {
 
 router.getAssemblyDefinition = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId + "/w/" + req.query.workspaceId + "/e/" + req.query.nextElement + "?includeMateFeatures=false",
+    uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.nextElement + '?includeMateFeatures=false',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
