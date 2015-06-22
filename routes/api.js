@@ -74,8 +74,6 @@ router.getElementList = function(req, res) {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
   }).then(function(data) {
-    //console.log('****** getElementList - send data');
-
     res.send(data);
   }).catch(function(data) {
     console.log('****** getElementList - CATCH ' + data.statusCode);
@@ -98,7 +96,8 @@ router.getShadedView = function(req, res) {
     '&outputHeight=' + req.query.outputHeight + '&outputWidth=' + req.query.outputWidth + '&pixelSize=' + req.query.pixelSize +
     '&viewMatrix=' + req.query.viewMatrix1 + '&viewMatrix=' + req.query.viewMatrix2 + '&viewMatrix=' + req.query.viewMatrix3 + '&viewMatrix=' + req.query.viewMatrix4 +
     '&viewMatrix=' + req.query.viewMatrix5 + '&viewMatrix=' + req.query.viewMatrix6 + '&viewMatrix=' + req.query.viewMatrix7 + '&viewMatrix=' + req.query.viewMatrix8 +
-    '&viewMatrix=' + req.query.viewMatrix9 + '&viewMatrix=' + req.query.viewMatrix10 + '&viewMatrix=' + req.query.viewMatrix11 + '&viewMatrix=' + req.query.viewMatrix12,
+    '&viewMatrix=' + req.query.viewMatrix9 + '&viewMatrix=' + req.query.viewMatrix10 + '&viewMatrix=' + req.query.viewMatrix11 + '&viewMatrix=' + req.query.viewMatrix12 +
+    '&perspective=false',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
