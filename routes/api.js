@@ -69,7 +69,7 @@ exports.getDocuments = function(req, res) {
 
 router.getElementList = function(req, res) {
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
+    uri: 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
