@@ -7,7 +7,7 @@ BOM is an node.js application demonstrating assembly navigation, metadata retrie
 Go to your [app preferences](https://partner.dev.onshape.com/). Click the "Create application" within Onshape document. Fill out the form like so:
 
 * **Name**: My BOM app
-* **URL**: https://secret-ocean-9124.herokuapp.com/oauthSignin
+* **URL**: https://onshape-app-bom.herokuapp.com/oauthSignin
 * **Base HREF**: You can leave this blank
 
 This app requires to be run in a tab of Onshape, an iFrame. In this type of configuration, Onshape will pass documentId, workspaceId and elementId as query params to the frame. These are utilized by the BOM app to give it context of what the active document is within Onshape. 
@@ -37,6 +37,38 @@ Execute the following commands to create a duplicate of a repository, you need t
 
 Send the URL that Heroku produces for the new app to api-support@onshape.com, Onshape will register the app on Partner server and send back the OAUTH ID/Secret which are required for authentication.
 
+Make changes to code at two places for the new URL that Heroku has produced, as shown below:
+
+    file# 1: ./package.json
+       
+       ......... 
+       ........
+       "repository": {
+       "type": "git",
+       "url": "https://newURL-from-heroku.herokuapp.com/"
+       },
+       ...........
+       
+   And
+   
+    file# 2: ./authentication.js
+          
+        ........... 
+       passport.use(new OnshapeStrategy({
+         clientID: oauthClientId,
+         clientSecret: oauthClientSecret,
+         callbackURL: "https://newURL-from-heroku.herokuapp.com/oauthRedirect",
+         .............
+       },
+       function(accessToken, refreshToken, profile, done) {
+         ........... 
+
+Push the local repo code along with code changes to heruko
+
+    $ git add package.json
+    $ git add authentication.js
+    $ git commit -am "changes to code for callbackURL"
+    
     $ git push heroku master
 
 You will need to set the ID and Secret as environment variables on the server. These are only visible to the app running on the server preserving security of that information.
