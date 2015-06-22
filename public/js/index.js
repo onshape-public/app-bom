@@ -345,9 +345,9 @@ function onGenerate2() {
 
   var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId +
           "&outputHeight=600&outputWidth=600&pixelSize=" + realSize / 600 +
-          "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0.707 + "&viewMatrix=" + 0 + "&viewMatrix=" + (-tX) +
-          "&viewMatrix=" + (-0.409) + "&viewMatrix=" + 0.409 + "&viewMatrix=" + 0.816 + "&viewMatrix=" + (-tY) +
-          "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-0.577) + "&viewMatrix=" + 0.577 + "&viewMatrix=" + (-tZ);
+      "&viewMatrix1=" + 0.707 + "&viewMatrix2=" + 0.707 + "&viewMatrix3=" + 0 + "&viewMatrix4=" + (-tX) +
+      "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + (-tY) +
+      "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + (-tZ);
 
   $.ajax('/getShadedView'+ options, {
     dataType: 'json',
