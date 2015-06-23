@@ -47,6 +47,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 app.use('/signin', express.static(path.join(__dirname, '..', 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/grantDenied', express.static('Application has been denied access to Onshape'));
 
 app.use(session({
   store: new RedisStore({
@@ -111,7 +112,7 @@ function storeExtraParams(req, res) {
 //   signin page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
 app.use('/oauthRedirect',
-    passport.authenticate('onshape', { failureRedirect: '/signin' }),
+    passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
       var id = req.query.state;
       var params = StateMap[id];
