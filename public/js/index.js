@@ -37,10 +37,10 @@ function refreshContextElements() {
       var id;
 
       for (var i = 0; i < objects.length; ++i) {
-        if (objects[i].type == 'ASSEMBLY') {
+        if (objects[i].elementType == 'ASSEMBLY') {
           $("#elt-select")
               .append(
-              "<option value='" + objects[i].elementId + "'" +
+              "<option value='" + objects[i].id + "'" +
               (i == 0 ? " selected" : "") +
               ">" +
               objects[i].name + "</option>"
