@@ -245,10 +245,10 @@ function findAssemblies(resolve, reject) {
       var obj = data;
       var id;
       for (var i = 0; i < obj.length; ++i) {
-        if (obj[i].type == 'ASSEMBLY') {
+        if (obj[i].elementType == 'ASSEMBLY') {
           // Add this to the list of assemblies
           SubAsmArray[SubAsmArray.length] = {
-            Element: obj[i].elementId,
+            Element: obj[i].id,
             Count: 0,
             Handled: false,
             Name : obj[i].name,
