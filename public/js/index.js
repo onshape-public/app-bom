@@ -26,9 +26,9 @@ $(document).ready(function() {
 // update the list of elements in the context header
 function refreshContextElements() {
   var dfd = $.Deferred();
-  $.ajax('/getElements'+ window.location.search, {
+  $.ajax('/api/elements'+ window.location.search, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       // for each element, create a select option to make that element the current context
       $("#elt-select").empty();
@@ -64,9 +64,9 @@ function refreshContextElements() {
 // refresh all session information
 function refreshSessionInformation() {
   var dfd = $.Deferred();
-  $.ajax('/getSession', {
+  $.ajax('/api/session', {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       theSession = data;
 
@@ -112,9 +112,9 @@ function onGenerate() {
   theContext.elementId = $("#elt-select option:selected").val();
 
   // Get the bounding box size
-  $.ajax('/getBoundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + theContext.elementId, {
+  $.ajax('/api/boundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + theContext.elementId, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       var res = data;
       var xLow = res.lowX;
@@ -158,9 +158,9 @@ var ThumbPromises = [];
 function generateBBox(elementId) {
   return new Promise(function(resolve, reject) {
     // Get the bounding box size
-    $.ajax('/getBoundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + elementId, {
+    $.ajax('/api/boundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + elementId, {
       dataType: 'json',
-      type: 'POST',
+      type: 'GET',
       success: function(data) {
         var res = data;
         var xLow = res.lowX;
@@ -214,9 +214,9 @@ function generateThumbs(argMap) {
         "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + yCtr +
         "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + zCtr;
 
-    $.ajax('/getShadedView'+ options, {
+    $.ajax('/api/shadedView'+ options, {
       dataType: 'json',
-      type: 'POST',
+      type: 'GET',
       success: function(data) {
         var res = data;
         if (res.images.length > 0) {
@@ -237,9 +237,9 @@ function generateThumbs(argMap) {
 }
 
 function findAssemblies(resolve, reject) {
-  $.ajax('/getElements'+ window.location.search, {
+  $.ajax('/api/elements'+ window.location.search, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       // for each element, create a select option to make that element the current context
       var obj = data;
@@ -291,9 +291,9 @@ function saveComponentToList(asmIndex, itemName, asmElementId, partElementId) {
 }
 
 function findComponents(resolve, reject, nextElement, asmIndex) {
-  $.ajax('/getDefinition'+ window.location.search + '&nextElement=' + nextElement, {
+  $.ajax('/api/definition'+ window.location.search + '&nextElement=' + nextElement, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       var compData = data;
 
@@ -349,9 +349,9 @@ function onGenerate2() {
       "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + (-tY) +
       "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + (-tZ);
 
-  $.ajax('/getShadedView'+ options, {
+  $.ajax('/api/shadedView'+ options, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       var res = data;
       if (res.images.length > 0) {
@@ -622,9 +622,9 @@ function onGenerate3()
   if (e.checked == true)
     addImage = true;
 
-  $.ajax('/getElements'+ window.location.search, {
+  $.ajax('/api/elements'+ window.location.search, {
     dataType: 'json',
-    type: 'POST',
+    type: 'GET',
     success: function(data) {
       // Find all components of the assembly
       var obj = data;
