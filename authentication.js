@@ -1,7 +1,6 @@
 var request = require('request-promise');
-var dateUtils = require('date-utils');
 var passport = require('passport');
-var OnshapeStrategy = require('./passport-onshape').Strategy;
+var OnshapeStrategy = require('passport-onshape').Strategy;
 
 var oauthClientId;
 var oauthClientSecret;
@@ -36,9 +35,9 @@ function init() {
         profile.accessToken = accessToken;
         profile.refreshToken = refreshToken;
 
-        // To keep the example simple, the user's GitHub profile is returned to
+        // To keep the example simple, the user's Onshape profile is returned to
         // represent the logged-in user.  In a typical application, you would want
-        // to associate the GitHub account with a user record in your database,
+        // to associate the Onshape account with a user record in your database,
         // and return that user instead.
         return done(null, profile);
       });

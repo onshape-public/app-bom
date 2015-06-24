@@ -24,7 +24,7 @@ router.post('/logout', function(req, res) {
   return res.send({});
 });
 
-router.getSession = function(req, res) {
+var getSession = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/users/session',
     headers: {
@@ -36,7 +36,7 @@ router.getSession = function(req, res) {
     console.log('****** getSession - CATCH ' + data.statusCode);
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        router.getElementList(req, res);
+        getSession(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting session: ', err);
       });
@@ -46,7 +46,7 @@ router.getSession = function(req, res) {
   });
 };
 
-exports.getDocuments = function(req, res) {
+var getDocuments = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/documents',
     headers: {
@@ -67,7 +67,7 @@ exports.getDocuments = function(req, res) {
   });
 };
 
-router.getElementList = function(req, res) {
+var getElementList = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements',
     headers: {
@@ -79,7 +79,7 @@ router.getElementList = function(req, res) {
     console.log('****** getElementList - CATCH ' + data.statusCode);
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        router.getElementList(req, res);
+        getElementList(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting elements: ', err);
       });
@@ -89,7 +89,7 @@ router.getElementList = function(req, res) {
   });
 };
 
-router.getShadedView = function(req, res) {
+var getShadedView = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId +
     '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/shadedviews?' +
@@ -105,10 +105,9 @@ router.getShadedView = function(req, res) {
 
     res.send(data);
   }).catch(function(data) {
-
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        router.getElementList(req, res);
+        getShadedView(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting elements: ', err);
       });
@@ -118,7 +117,7 @@ router.getShadedView = function(req, res) {
   });
 };
 
-router.getBoundingBox = function(req, res) {
+var getBoundingBox = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId +
           '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/boundingboxes/',
@@ -126,12 +125,11 @@ router.getBoundingBox = function(req, res) {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
   }).then(function(data) {
-
     res.send(data);
   }).catch(function(data) {
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        router.getElementList(req, res);
+        getBoundingBox(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting elements: ', err);
       });
@@ -141,7 +139,7 @@ router.getBoundingBox = function(req, res) {
   });
 };
 
-router.getPartsList = function(req, res) {
+var getPartsList = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
     headers: {
@@ -152,7 +150,7 @@ router.getPartsList = function(req, res) {
   }).catch(function(data) {
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        getDocuments(req, res);
+        getPartsList(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting elements: ', err);
       });
@@ -162,7 +160,7 @@ router.getPartsList = function(req, res) {
   });
 };
 
-router.getAssemblyDefinition = function(req, res) {
+var getAssemblyDefinition = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.nextElement + '?includeMateFeatures=false',
     headers: {
@@ -173,7 +171,7 @@ router.getAssemblyDefinition = function(req, res) {
   }).catch(function(data) {
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        getDocuments(req, res);
+        getAssemblyDefinition(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting definition: ', err);
       });
@@ -183,8 +181,7 @@ router.getAssemblyDefinition = function(req, res) {
   });
 };
 
-router.getStl = function(req, res) {
-
+var getStl = function(req, res) {
   var url = 'https://partner.dev.onshape.com/api/documents/' + req.query.documentId + '/export/' + req.query.stlElementId +
       '?workspaceId=' + req.query.workspaceId +
       '&format=STL&mode=' + 'text'  +
@@ -206,7 +203,7 @@ router.getStl = function(req, res) {
   }).catch(function(data) {
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        getDocuments(req, res);
+        getStl(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token or getting elements: ', err);
       });
@@ -216,8 +213,13 @@ router.getStl = function(req, res) {
   });
 };
 
-router.get('/documents', function(req, res) {
-  getDocuments(req, res);
-});
+router.get('/documents', getDocuments);
+router.get('/session', getSession);
+router.get('/elements', getElementList);
+router.get('/parts', getPartsList);
+router.get('/boundingBox', getBoundingBox);
+router.get('/definition', getAssemblyDefinition);
+router.get('/shadedView', getShadedView);
+
 
 module.exports = router;
