@@ -1,11 +1,7 @@
 ////////////////////////////////////////////////////////////////
 // global data
 
-var theQuery;
-var theSession = null;
 var theContext = {};
-var notificationRegistrations = {};
-var sessionID = "";
 var ResultTable;
 
 ////////////////////////////////////////////////////////////////
@@ -13,9 +9,21 @@ var ResultTable;
 //
 $(document).ready(function() {
 
-  // set globals
-  theQuery = $.getQuery();
-  initHeader();
+  // retrieve the query params
+  var theQuery = $.getQuery();
+
+  // connect the button
+  $("#element-generate").button().click(onGenerate);
+
+  // Hold onto the current session information
+  theContext.documentId = theQuery.documentId;
+  theContext.workspaceId = theQuery.workspaceId;
+  theContext.elementId = theQuery.elementId;
+  theContext.partId = "";
+  theContext.parts = [];
+  theContext.selectedPart = -1;
+  refreshContextElements();
+
 });
 
 
@@ -49,47 +57,9 @@ function refreshContextElements() {
         }
       }
       theContext.elementId = $("#elt-select option:selected").val();
-    },
-    error: function() {
-      theSession = null;
     }
   });
   return dfd.promise();
-}
-
-// refresh all session information
-function refreshSessionInformation() {
-  var dfd = $.Deferred();
-  $.ajax('/api/session', {
-    dataType: 'json',
-    type: 'GET',
-    success: function(data) {
-      theSession = data;
-
-      // parse returned data to set user context
-      var s = data;
-      theContext.userId = s.id;
-    },
-    error: function() {
-      theSession = null;
-    }
-  });
-  return dfd.promise();
-}
-
-function initHeader() {
-
-  $("#element-generate").button().click(onGenerate);
-
-  // Hold onto the current session information
-  theContext.documentId = theQuery.documentId;
-  theContext.workspaceId = theQuery.workspaceId;
-  theContext.elementId = theQuery.elementId;
-  theContext.partId = "";
-  theContext.parts = [];
-  theContext.selectedPart = -1;
-//  refreshSessionInformation();
-  refreshContextElements();
 }
 
 /////////////////////////////////////
@@ -595,7 +565,6 @@ function onGenerate3()
 // Add all of the parts of the selected document to the table
   var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
   var params = {name:"generic", method:"GET", path: path};
-  params.sessionID = sessionID;
 
   var isFlat = true;
 
@@ -714,7 +683,7 @@ function onGenerate3()
           if (addImage)
             totalImageString = "<td>" + imageString + "</td>";
 
-          //  ResultTable.append("<tr></tr>");
+          // ResultTable.append("<tr></tr>");
           if (Comp2Array[i].Collapse == true) {
             ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
             "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
@@ -763,10 +732,10 @@ $(function() {
     var tr = el.closest('tr'); //Get <tr> parent of toggle button
     var children = findChildren(tr);
 
-    //Remove already collapsed nodes from children so that we don't
-    //make them visible.
-    //(Confused? Remove this code and close Item 2, close Item 1
-    //then open Item 1 again, then you will understand)
+    // Remove already collapsed nodes from children so that we don't
+    // make them visible.
+    // (Confused? Remove this code and close Item 2, close Item 1
+    // then open Item 1 again, then you will understand)
     var subnodes = children.filter('.expand');
     subnodes.each(function () {
       var subnode = $(this);
@@ -774,7 +743,7 @@ $(function() {
       children = children.not(subnodeChildren);
     });
 
-    //Change icon and hide/show children
+    // Change icon and hide/show children
     if (tr.hasClass('collapse')) {
       tr.removeClass('collapse').addClass('expand');
       children.hide();
