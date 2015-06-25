@@ -90,10 +90,7 @@ function storeExtraParams(req, res) {
     elementId : elId
   };
 
-  var params = JSON.stringify(state);
-
   var id = uuid.v4(state);
-
   StateMap[id] = state;
 
   return passport.authenticate("onshape", {state: id})(req, res);
@@ -150,4 +147,3 @@ app.use(function(err, req, res, next) {
 
 
 module.exports = app;
-
