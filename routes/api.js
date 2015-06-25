@@ -109,10 +109,10 @@ var getShadedView = function(req, res) {
       authentication.refreshOAuthToken(req, res).then(function() {
         getShadedView(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or getting elements: ', err);
+        console.log('Error refreshing token or getting shaded view: ', err);
       });
     } else {
-      console.log('GET /api/assemblies/boundingbox error: ', data);
+      console.log('GET /api/assemblies/shadedviews error: ', data);
     }
   });
 };
@@ -131,7 +131,7 @@ var getBoundingBox = function(req, res) {
       authentication.refreshOAuthToken(req, res).then(function() {
         getBoundingBox(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or getting elements: ', err);
+        console.log('Error refreshing token or getting bounding box: ', err);
       });
     } else {
       console.log('GET /api/assemblies/boundingbox error: ', data);
@@ -152,7 +152,7 @@ var getPartsList = function(req, res) {
       authentication.refreshOAuthToken(req, res).then(function() {
         getPartsList(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or getting elements: ', err);
+        console.log('Error refreshing token or getting parts: ', err);
       });
     } else {
       console.log('GET /api/parts/workspace error: ', data);
@@ -173,7 +173,7 @@ var getAssemblyDefinition = function(req, res) {
       authentication.refreshOAuthToken(req, res).then(function() {
         getAssemblyDefinition(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or getting definition: ', err);
+        console.log('Error refreshing token or getting assembly definition: ', err);
       });
     } else {
       console.log('GET /api/models/assembly/definition error: ', data);
@@ -205,10 +205,10 @@ var getStl = function(req, res) {
       authentication.refreshOAuthToken(req, res).then(function() {
         getStl(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or getting elements: ', err);
+        console.log('Error refreshing token or exporting stl data: ', err);
       });
     } else {
-      console.log('GET /api/parts/workspace error: ', data);
+      console.log('GET /api/export error: ', data);
     }
   });
 };

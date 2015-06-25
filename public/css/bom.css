@@ -1,0 +1,53 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
+  padding: 10;
+  margin: 10;
+}
+h2 {
+  font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+table,
+th {
+  font-family: "Open-Sans";
+  font-size: 11pt;
+  color: #333333;
+  align: left;
+  border-bottom: 1px solid #9aa5af;
+  line-height: 36px;
+}
+table,
+th,
+td {
+  border-collapse: collapse;
+}
+.app-title {
+  font-size: 12pt;
+  font-weight: 600;
+}
+.boldlabel {
+  font-size: 11pt;
+  color: #1b5faa;
+  font-weight: 600;
+}
+.block,
+.title {
+
+}
+.block {
+  padding: 40px;
+}
+.collapse .toggle {
+  background: url("../images/expanded.svg");
+}
+.expand .toggle {
+  background: url("../images/collapsed.svg");
+}
+.toggle {
+  height: 10px;
+  width: 10px;
+  display: inline-block;
+}

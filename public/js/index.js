@@ -1,11 +1,7 @@
 ////////////////////////////////////////////////////////////////
 // global data
 
-var theQuery;
-var theSession = null;
 var theContext = {};
-var notificationRegistrations = {};
-var sessionID = "";
 var ResultTable;
 
 ////////////////////////////////////////////////////////////////
@@ -13,17 +9,25 @@ var ResultTable;
 //
 $(document).ready(function() {
 
-  // set globals
-  theQuery = $.getQuery();
+  // retrieve the query params
+  var theQuery = $.getQuery();
 
-  // activate top of page tabs
-  $("#dev-tabs").tabs({ active : 0 });
+  // connect the button
+  $("#element-generate").button().click(onGenerate);
 
-  initHeader();
+  // Hold onto the current session information
+  theContext.documentId = theQuery.documentId;
+  theContext.workspaceId = theQuery.workspaceId;
+  theContext.elementId = theQuery.elementId;
+  theContext.partId = "";
+  theContext.parts = [];
+  theContext.selectedPart = -1;
+  refreshContextElements();
+
 });
 
 
-// update the list of elements in the context header
+// update the list of elements in the context object
 function refreshContextElements() {
   var dfd = $.Deferred();
   $.ajax('/api/elements'+ window.location.search, {
@@ -53,47 +57,9 @@ function refreshContextElements() {
         }
       }
       theContext.elementId = $("#elt-select option:selected").val();
-    },
-    error: function() {
-      theSession = null;
     }
   });
   return dfd.promise();
-}
-
-// refresh all session information
-function refreshSessionInformation() {
-  var dfd = $.Deferred();
-  $.ajax('/api/session', {
-    dataType: 'json',
-    type: 'GET',
-    success: function(data) {
-      theSession = data;
-
-      // parse returned data to set user context
-      var s = data;
-      theContext.userId = s.id;
-    },
-    error: function() {
-      theSession = null;
-    }
-  });
-  return dfd.promise();
-}
-
-function initHeader() {
-
-  $("#element-generate").button().click(onGenerate);
-
-  // Hold onto the current session information
-  theContext.documentId = theQuery.documentId;
-  theContext.workspaceId = theQuery.workspaceId;
-  theContext.elementId = theQuery.elementId;
-  theContext.partId = "";
-  theContext.parts = [];
-  theContext.selectedPart = -1;
-  refreshSessionInformation();
-  refreshContextElements();
 }
 
 /////////////////////////////////////
@@ -107,7 +73,7 @@ var tZ = 0;
 
 function onGenerate() {
   // Destroy anything previously created ...
-  $('#apis').empty();
+  $('#bomResults').empty();
 
   theContext.elementId = $("#elt-select option:selected").val();
 
@@ -388,8 +354,7 @@ function onGenerate2() {
   ResultTable.append("<th style='min-width:150px' align='left'>Part Number</th>");
   ResultTable.append("<th style='min-width:100px' align='left'>Revision</th>");
 
-//  $('#apis').append(this.title);
-  $('#apis').append(this.block);
+  $('#bomResults').append(this.block);
 
   // Recursive search for components in the assembly
   Comp2Array = [];
@@ -596,11 +561,6 @@ function createTreeList() {
 
 function onGenerate3()
 {
-// Add all of the parts of the selected document to the table
-  var path = "/api/parts/" + theContext.documentId + "/workspace/" + theContext.workspaceId;
-  var params = {name:"generic", method:"GET", path: path};
-  params.sessionID = sessionID;
-
   var isFlat = true;
 
   // Create a flattened list of components
@@ -718,7 +678,7 @@ function onGenerate3()
           if (addImage)
             totalImageString = "<td>" + imageString + "</td>";
 
-          //  ResultTable.append("<tr></tr>");
+          // ResultTable.append("<tr></tr>");
           if (Comp2Array[i].Collapse == true) {
             ResultTable.append("<tr data-depth='" + Comp2Array[i].Level + "' class='collapse level" + Comp2Array[i].Level + "' bgcolor='" + colorOverride + "'>" + "<td><span class='toggle collapse'></span></td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td><b>" + Comp2Array[i].Name + "</b></td>" +
             "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
@@ -753,7 +713,7 @@ function onGenerate3()
 // Expand/Collapse code for the controls in the generated BOM table
 //
 $(function() {
-  $('#apis').on('click', '.toggle', function () {
+  $('#bomResults').on('click', '.toggle', function () {
     //Gets all <tr>'s  of greater depth
     //below element in the table
     var findChildren = function (tr) {
@@ -767,10 +727,10 @@ $(function() {
     var tr = el.closest('tr'); //Get <tr> parent of toggle button
     var children = findChildren(tr);
 
-    //Remove already collapsed nodes from children so that we don't
-    //make them visible.
-    //(Confused? Remove this code and close Item 2, close Item 1
-    //then open Item 1 again, then you will understand)
+    // Remove already collapsed nodes from children so that we don't
+    // make them visible.
+    // (Confused? Remove this code and close Item 2, close Item 1
+    // then open Item 1 again, then you will understand)
     var subnodes = children.filter('.expand');
     subnodes.each(function () {
       var subnode = $(this);
@@ -778,7 +738,7 @@ $(function() {
       children = children.not(subnodeChildren);
     });
 
-    //Change icon and hide/show children
+    // Change icon and hide/show children
     if (tr.hasClass('collapse')) {
       tr.removeClass('collapse').addClass('expand');
       children.hide();
