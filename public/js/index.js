@@ -15,10 +15,6 @@ $(document).ready(function() {
 
   // set globals
   theQuery = $.getQuery();
-
-  // activate top of page tabs
-  $("#dev-tabs").tabs({ active : 0 });
-
   initHeader();
 });
 
@@ -107,7 +103,7 @@ var tZ = 0;
 
 function onGenerate() {
   // Destroy anything previously created ...
-  $('#apis').empty();
+  $('#bomResults').empty();
 
   theContext.elementId = $("#elt-select option:selected").val();
 
@@ -388,8 +384,8 @@ function onGenerate2() {
   ResultTable.append("<th style='min-width:150px' align='left'>Part Number</th>");
   ResultTable.append("<th style='min-width:100px' align='left'>Revision</th>");
 
-//  $('#apis').append(this.title);
-  $('#apis').append(this.block);
+
+  $('#bomResults').append(this.block);
 
   // Recursive search for components in the assembly
   Comp2Array = [];
@@ -753,7 +749,7 @@ function onGenerate3()
 // Expand/Collapse code for the controls in the generated BOM table
 //
 $(function() {
-  $('#apis').on('click', '.toggle', function () {
+  $('#bomResults').on('click', '.toggle', function () {
     //Gets all <tr>'s  of greater depth
     //below element in the table
     var findChildren = function (tr) {
