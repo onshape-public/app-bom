@@ -88,7 +88,7 @@ function initHeader() {
   theContext.partId = "";
   theContext.parts = [];
   theContext.selectedPart = -1;
-  refreshSessionInformation();
+//  refreshSessionInformation();
   refreshContextElements();
 }
 
