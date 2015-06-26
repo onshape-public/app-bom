@@ -505,14 +505,11 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
 // Add the Sub Assembly to the list with the proper count
 // Then add all of the components for one instance of the sub-assembly
 //
-function addSubAssemblyToList(indexI, levelIn, recurse) {
+function addSubAssemblyToList(indexI, levelIn, countIn, recurse) {
   // Put on the sub-assembly with the collapse option as TRUE
-  var asmCount = SubAsmArray[indexI].Count;
-//  if (recurse == true)
-//    asmCount = 1;
   Comp2Array[Comp2Array.length] = {
     Name : SubAsmArray[indexI].Name,
-    Count : asmCount,
+    Count : countIn,
     PartNumber : 0,
     Revision : 1,
     Level : levelIn,
@@ -529,7 +526,7 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
       // Add sub-assemblies to the tree
       for (var y = 0; y < SubAsmArray.length; ++y) {
         if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].AsmElementId)
-          addSubAssemblyToList(y, levelIn + 1, true);
+          addSubAssemblyToList(y, levelIn + 1, SubAsmArray[indexI].Components[x].Count, true);
       }
     }
   }
@@ -558,7 +555,7 @@ function createTreeList() {
       // Find the sub-assembly to add ...
       for (var y = 0; y < SubAsmArray.length; ++y) {
         if (SubAsmArray[y].Element == SubAsmArray[topLevelAsmIndex].Components[x].AsmElementId)
-          addSubAssemblyToList(y, currentLevel, true);
+          addSubAssemblyToList(y, currentLevel, SubAsmArray[topLevelAsmIndex].Components[x].Count, true);
       }
     }
   }
