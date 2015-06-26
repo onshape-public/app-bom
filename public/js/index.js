@@ -562,7 +562,7 @@ function createLayeredList() {
   for (var y = 0; y < SubAsmArray[topLevelAsmIndex].Components.length; ++y) {
     // Find out if this component exists in our flattened list yet
     if (SubAsmArray[topLevelAsmIndex].Components[y].AsmElementId == 0)
-      addComponentToList(topLevelAsmIndex, y, currentLevel, false);
+      addComponentToList(topLevelAsmIndex, y, 0, false);
   }
 
   // Now, add the sub-assemblies
