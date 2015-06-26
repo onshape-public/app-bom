@@ -549,19 +549,35 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
 // From all of the assemblies, create a list of components by sub-assembly
 //
 function createLayeredList() {
-  // Walk from the top-level assembly
-  var currentLevel = 0;
-  for (var i = 0; i < SubAsmArray.length; ++i) {
-    if (i > 0) {
-      // Add a sub-assembly to the master list ... note the first one is the top-level assembly
-      addSubAssemblyToList(i, 0, false);
+  // Find the top level assembly to start with
+  var topLevelAsmIndex = 0;
+  for (var x = 0; x < SubAsmArray.length; ++x) {
+    if (SubAsmArray[x].Element == theContext.elementId) {
+      topLevelAsmIndex = x;
+      break;
     }
-    else {
-      for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
-        // Find out if this component exists in our flattened list yet
-        if (SubAsmArray[i].Components[x].AsmElementId == 0)
-          addComponentToList(i, x, currentLevel, false);
+  }
+
+  // Add all components for this assembly first
+  for (var y = 0; y < SubAsmArray[itopLevelAsmIndex].Components.length; ++y) {
+    // Find out if this component exists in our flattened list yet
+    if (SubAsmArray[topLevelAsmIndex].Components[y].AsmElementId == 0)
+      addComponentToList(topLevelAsmIndex, y, currentLevel, false);
+  }
+
+  // Now, add the sub-assemblies
+  for (var z = 0; z < SubAsmArray[itopLevelAsmIndex].Components.length; ++z) {
+    // Find out if this component exists in our flattened list yet
+    if (SubAsmArray[topLevelAsmIndex].Components[z].AsmElementId > 0) {
+      // Find the index of this sub-assembly
+      var subLevelAsmIndex = 0;
+      for (var w = 0; w < SubAsmArray.length; ++w) {
+        if (SubAsmArray[w].Element == SubAsmArray[topLevelAsmIndex].Components[z].AsmElementId) {
+          subLevelAsmIndex = w;
+          break;
+        }
       }
+      addSubAssemblyToList(subLevelAsmIndex, 0, false);
     }
   }
 }
