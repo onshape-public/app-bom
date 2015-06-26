@@ -268,13 +268,9 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
       var compData = data;
 
       // Find this assembly and make sure it's marked as used
-      var thisAsmIndex = 0;
       for (var k = 0; k < SubAsmArray.length; ++k) {
-        if (SubAsmArray[k].Element == nextElement) {
-          thisAsmIndex = k;
-          if (SubAsmArray[k].Count == 0)
+        if (SubAsmArray[k].Element == nextElement && SubAsmArray[k].Count == 0)
             SubAsmArray[k].Count = 1;
-        }
       }
 
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
@@ -286,7 +282,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
             itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
           // Search through the list of components to find a match
-          saveComponentToList(thisAsmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
+          saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
         }
       }
 
@@ -388,7 +384,8 @@ function onGenerate2() {
     var listPromises = [];
 
     // Find all of the components in the selected assembly (and it's sub-assemblies)
-    listPromises.push(new Promise(function(resolve, reject) { findComponents(resolve, reject, theContext.elementId, 0); }));
+    for (var x = 0; x < SubAsmArray.length; ++x)
+      listPromises.push(new Promise(function(resolve, reject) { findComponents(resolve, reject, SubAsmArray[x].Element, x); }));
 
     return Promise.all(listPromises);
   }).then(function() {
@@ -417,6 +414,8 @@ function onGenerate2() {
 // From all of the assemblies, create a list of flattened components
 //
 function createFlattenedList() {
+  // Find the top level assembly to start with
+  
   // Create a flattened list of components
   for (var i = 0; i < SubAsmArray.length; ++i) {
     // If the assembly is not referenced, don't include it
