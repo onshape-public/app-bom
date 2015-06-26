@@ -416,6 +416,7 @@ function flattenSubAssembly(assemblyIndex) {
         var subLevelAsmIndex = 0;
         for (var z = 0; z < SubAsmArray.length; ++z) {
           if (SubAsmArray[z].Element == SubAsmArray[assemblyIndex].Components[x].AsmElementId) {
+            SubAsmArray[z].Count += SubAsmArray[assemblyIndex].Components[x].Count;
             subLevelAsmIndex = z;
             break;
           }
