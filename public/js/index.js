@@ -453,7 +453,7 @@ function flattenSubAssembly(assemblyIndex) {
       // Add this component to the list
       if (found == false) {
         Comp2Array[Comp2Array.length] = {
-          Name : SubAsmArray[i].Components[x].Name,
+          Name : SubAsmArray[assemblyIndex].Components[x].Name,
           Count : countMultiplier * SubAsmArray[assemblyIndex].Components[x].Count,
           PartNumber : 0,
           Revision : 1,
@@ -475,7 +475,7 @@ function createFlattenedList() {
       break;
     }
   }
-  
+
   // Start flattening from the top level assembly
   flattenSubAssembly(topLevelAsmIndex);
 }
