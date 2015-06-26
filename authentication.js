@@ -23,7 +23,7 @@ function init() {
   passport.use(new OnshapeStrategy({
       clientID: oauthClientId,
       clientSecret: oauthClientSecret,
-      callbackURL: "https://secure-hollows-4050.herokuapp.com/oauthRedirect",
+      callbackURL: "https://onshape-app-bom.herokuapp.com/oauthRedirect",
       authorizationURL: "https://partner.dev.onshape.com/oauth/authorize",
       tokenURL: "https://partner.dev.onshape.com/oauth/token",
       userProfileURL: "https://partner.dev.onshape.com/api/users/current"
