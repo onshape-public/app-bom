@@ -559,14 +559,14 @@ function createLayeredList() {
   }
 
   // Add all components for this assembly first
-  for (var y = 0; y < SubAsmArray[itopLevelAsmIndex].Components.length; ++y) {
+  for (var y = 0; y < SubAsmArray[topLevelAsmIndex].Components.length; ++y) {
     // Find out if this component exists in our flattened list yet
     if (SubAsmArray[topLevelAsmIndex].Components[y].AsmElementId == 0)
       addComponentToList(topLevelAsmIndex, y, currentLevel, false);
   }
 
   // Now, add the sub-assemblies
-  for (var z = 0; z < SubAsmArray[itopLevelAsmIndex].Components.length; ++z) {
+  for (var z = 0; z < SubAsmArray[topLevelAsmIndex].Components.length; ++z) {
     // Find out if this component exists in our flattened list yet
     if (SubAsmArray[topLevelAsmIndex].Components[z].AsmElementId > 0) {
       // Find the index of this sub-assembly
