@@ -39,8 +39,8 @@ Execute the following commands to create a duplicate of a repository; you need t
 
 To regsister the new app, please send the following information to api-support@onshape.com (the output from Heroku should produce the domain name):
 
-   Application name (ex: Onshape BOM Sample)
-   Application description (one sentence; ex: "Onshape BOM Sample application — source code is available.")
+    Application name (ex: Onshape BOM Sample)
+    Application description (one sentence; ex: "Onshape BOM Sample application — source code is available.")
     URL for sign-in (ex: onshape-app-bom-viewer.herokuapp.com/oauthSignin)
     URL for redirect (ex: onshape-app-bom-viewer.herokuapp.com/oauthRedirect)
     Requested Format ID (ex: Onshape-Demo/BOM)
