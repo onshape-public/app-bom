@@ -521,13 +521,13 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
     AsmElementId : SubAsmArray[indexI].Element
   }
 
-  // Now go through and add all of the children components at Level 1
+  // Now go through and add all of the children components at Level +1 to this one
   for (var x = 0; x < SubAsmArray[indexI].Components.length; ++x) {
     if (SubAsmArray[indexI].Components[x].AsmElementId == 0)
       addComponentToList(indexI, x, levelIn + 1, true);
     else if (recurse == true) {
       // Add sub-assemblies to the tree
-      for (var y = 1; y < SubAsmArray.length; ++y) {
+      for (var y = 0; y < SubAsmArray.length; ++y) {
         if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].AsmElementId)
           addSubAssemblyToList(y, levelIn + 1, true);
       }
@@ -539,19 +539,25 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
 // From all of the assemblies, create a list of components by sub-assembly
 //
 function createTreeList() {
-  if (SubAsmArray.length == 0)
-    return;
+  // Find the top level assembly to start with
+  var topLevelAsmIndex = 0;
+  for (var x = 0; x < SubAsmArray.length; ++x) {
+    if (SubAsmArray[x].Element == theContext.elementId) {
+      topLevelAsmIndex = x;
+      break;
+    }
+  }
 
   // Walk from the top-level assembly
   var currentLevel = 0;
-  for (var x = 0; x < SubAsmArray[0].Components.length; ++x) {
+  for (var x = 0; x < SubAsmArray[topLevelAsmIndex].Components.length; ++x) {
     // Find out if this component exists in our flattened list yet
-    if (SubAsmArray[0].Components[x].AsmElementId == 0)
-      addComponentToList(0, x, currentLevel, false);
+    if (SubAsmArray[topLevelAsmIndex].Components[x].AsmElementId == 0)
+      addComponentToList(topLevelAsmIndex, x, currentLevel, false);
     else {
       // Find the sub-assembly to add ...
-      for (var y = 1; y < SubAsmArray.length; ++y) {
-        if (SubAsmArray[y].Element == SubAsmArray[0].Components[x].AsmElementId)
+      for (var y = 0; y < SubAsmArray.length; ++y) {
+        if (SubAsmArray[y].Element == SubAsmArray[topLevelAsmIndex].Components[x].AsmElementId)
           addSubAssemblyToList(y, currentLevel, true);
       }
     }
