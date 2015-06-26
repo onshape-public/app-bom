@@ -413,29 +413,38 @@ function onGenerate2() {
 //
 // From all of the assemblies, create a list of flattened components
 //
-function createFlattenedList() {
-  // Find the top level assembly to start with
-  
-  // Create a flattened list of components
-  for (var i = 0; i < SubAsmArray.length; ++i) {
-    // If the assembly is not referenced, don't include it
-    if (SubAsmArray[i].Count == 0)
-      continue;
+function flattenSubAssembly(assemblyIndex) {
+  // Make sure we are not processing sub-assemblies more than once
+  if (SubAsmArray[assemblyIndex].Handled == true)
+    return;
+  SubAsmArray[assemblyIndex].Handled = true;
 
-    for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
+  // Create a flattened list of component
+  for (var x = 0; x < SubAsmArray[assemblyIndex].Components.length; ++x) {
       // Skip over any sub-assemblies in the list
-      if (SubAsmArray[i].Components[x].AsmElementId != 0)
+      if (SubAsmArray[assemblyIndex].Components[x].AsmElementId != 0) {
+        // Find the index for that assembly info
+        var subLevelAsmIndex = 0;
+        for (var z = 0; z < SubAsmArray.length; ++z) {
+          if (SubAsmArray[z].Element == SubAsmArray[assemblyIndex].Components[x].AsmElementId) {
+            subLevelAsmIndex = z;
+            break;
+          }
+        }
+
+        flattenSubAssembly(subLevelAsmIndex);
         continue;
+      }
 
       // Find out if this component exists in our flattened list yet
       var found = false;
       var countMultiplier = 1;
-      if (SubAsmArray[i].Count > 1)
-        countMultiplier = (SubAsmArray[i].Count - 1);
+      if (SubAsmArray[assemblyIndex].Count > 1)
+        countMultiplier = (SubAsmArray[assemblyIndex].Count - 1);
 
       for (var y = 0; y < Comp2Array.length; ++ y) {
-        if (Comp2Array[y].Name == SubAsmArray[i].Components[x].Name) {
-          Comp2Array[y].Count += countMultiplier * SubAsmArray[i].Components[x].Count;
+        if (Comp2Array[y].Name == SubAsmArray[assemblyIndex].Components[x].Name) {
+          Comp2Array[y].Count += countMultiplier * SubAsmArray[assemblyIndex].Components[x].Count;
           found = true;
           break;
         }
@@ -445,17 +454,30 @@ function createFlattenedList() {
       if (found == false) {
         Comp2Array[Comp2Array.length] = {
           Name : SubAsmArray[i].Components[x].Name,
-          Count : countMultiplier * SubAsmArray[i].Components[x].Count,
+          Count : countMultiplier * SubAsmArray[assemblyIndex].Components[x].Count,
           PartNumber : 0,
           Revision : 1,
           Level : 0,
           Collapse : false,
-          ElementId : SubAsmArray[i].Components[x].ElementId,
+          ElementId : SubAsmArray[assemblyIndex].Components[x].ElementId,
           AsmElementId : 0
         }
       }
     }
+}
+
+function createFlattenedList() {
+  // Find the top level assembly to start with
+  var topLevelAsmIndex = 0;
+  for (var x = 0; x < SubAsmArray.length; ++x) {
+    if (SubAsmArray[x].Element == theContext.elementId) {
+      topLevelAsmIndex = x;
+      break;
+    }
   }
+  
+  // Start flattening from the top level assembly
+  flattenSubAssembly(topLevelAsmIndex);
 }
 
 //
