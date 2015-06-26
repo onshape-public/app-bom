@@ -684,7 +684,7 @@ function onGenerate3()
             currentItemNumber++;
           }
           else if (Comp2Array[i].Level == 0) {
-            ResultTable.append("<tr data-depth='" + 0 + "' class='collapse level" + 0 + "><td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
+            ResultTable.append("<tr data-depth='" + 0 + "' class='collapse level" + 0 + "'><td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
             "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
             "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
             currentItemNumber++;
