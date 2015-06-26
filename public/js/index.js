@@ -198,10 +198,11 @@ function generateThumbs(argMap) {
   ThumbPromises.push(thumb);
 }
 
+
 function findAssemblies(resolve, reject) {
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId;
 
-  $.ajax('/api/elements'+ params, {
+  $.ajax('/api/assemblies' + params, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
@@ -209,15 +210,13 @@ function findAssemblies(resolve, reject) {
       var obj = data;
       var id;
       for (var i = 0; i < obj.length; ++i) {
-        if (obj[i].elementType == 'ASSEMBLY') {
-          // Add this to the list of assemblies
-          SubAsmArray[SubAsmArray.length] = {
-            Element: obj[i].id,
-            Count: 0,
-            Handled: false,
-            Name : obj[i].name,
-            Components : []
-          }
+        // Add this to the list of assemblies
+        SubAsmArray[SubAsmArray.length] = {
+          Element: obj[i].id,
+          Count: 0,
+          Handled: false,
+          Name : obj[i].name,
+          Components : []
         }
       }
 
