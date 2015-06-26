@@ -261,14 +261,10 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
     success: function(data) {
       var compData = data;
 
-      // Find this assembly and make sure it's marked as used
-      for (var k = 0; k < SubAsmArray.length; ++k) {
-        if (SubAsmArray[k].Element == nextElement && SubAsmArray[k].Count == 0)
-            SubAsmArray[k].Count = 1;
-      }
-
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
       for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
+
+        // If it's a part, then add that to the list
         if (compData.rootAssembly.instances[i].type == "Part") {
           var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
           var itemName = compData.rootAssembly.instances[i].name;
@@ -278,25 +274,24 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
           // Search through the list of components to find a match
           saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
         }
-      }
 
-      // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
-      for (var z = 0; z < compData.subAssemblies.length; ++z) {
-        var subElementId = compData.subAssemblies[z].elementId;
-        var found = false;
-        var asmName;
-        for (var n = 0; n < SubAsmArray.length; ++n) {
-          if (subElementId == SubAsmArray[n].Element) {
-            SubAsmArray[n].Count++;
-            found = true;
-            asmName = SubAsmArray[n].Name;
-            break;
-          }
+        // If it's a sub-assembly instance, make sure we bump the count properly.
+        else if (compData.rootAssembly.instances[i].type == "Assembly") {
+            var subElementId = compData.rootAssembly.instances[i].elementId;
+            var found = false;
+            var asmName;
+            for (var n = 0; n < SubAsmArray.length; ++n) {
+              if (subElementId == SubAsmArray[n].Element) {
+                found = true;
+                asmName = SubAsmArray[n].Name;
+                break;
+              }
+            }
+
+            // Save this as a 'component' in the list too
+            if (found == true)
+              saveComponentToList(asmIndex, asmName, subElementId, 0);
         }
-
-        // Save this as a 'component' in the list too
-        if (found == true)
-          saveComponentToList(asmIndex, asmName, subElementId, 0);
       }
 
       resolve(asmIndex);
@@ -421,6 +416,7 @@ function flattenSubAssembly(assemblyIndex) {
         var subLevelAsmIndex = 0;
         for (var z = 0; z < SubAsmArray.length; ++z) {
           if (SubAsmArray[z].Element == SubAsmArray[assemblyIndex].Components[x].AsmElementId) {
+            SubAsmArray[z].Count += SubAsmArray[assemblyIndex].Components[x].Count;
             subLevelAsmIndex = z;
             break;
           }
@@ -434,7 +430,7 @@ function flattenSubAssembly(assemblyIndex) {
       var found = false;
       var countMultiplier = 1;
       if (SubAsmArray[assemblyIndex].Count > 1)
-        countMultiplier = (SubAsmArray[assemblyIndex].Count - 1);
+        countMultiplier = SubAsmArray[assemblyIndex].Count;
 
       for (var y = 0; y < Comp2Array.length; ++ y) {
         if (Comp2Array[y].Name == SubAsmArray[assemblyIndex].Components[x].Name) {
@@ -509,14 +505,11 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
 // Add the Sub Assembly to the list with the proper count
 // Then add all of the components for one instance of the sub-assembly
 //
-function addSubAssemblyToList(indexI, levelIn, recurse) {
+function addSubAssemblyToList(indexI, levelIn, countIn, recurse) {
   // Put on the sub-assembly with the collapse option as TRUE
-  var asmCount = SubAsmArray[indexI].Count;
-  if (recurse == true)
-    asmCount = 1;
   Comp2Array[Comp2Array.length] = {
     Name : SubAsmArray[indexI].Name,
-    Count : asmCount,
+    Count : countIn,
     PartNumber : 0,
     Revision : 1,
     Level : levelIn,
@@ -525,15 +518,15 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
     AsmElementId : SubAsmArray[indexI].Element
   }
 
-  // Now go through and add all of the children components at Level 1
+  // Now go through and add all of the children components at Level +1 to this one
   for (var x = 0; x < SubAsmArray[indexI].Components.length; ++x) {
     if (SubAsmArray[indexI].Components[x].AsmElementId == 0)
       addComponentToList(indexI, x, levelIn + 1, true);
     else if (recurse == true) {
       // Add sub-assemblies to the tree
-      for (var y = 1; y < SubAsmArray.length; ++y) {
+      for (var y = 0; y < SubAsmArray.length; ++y) {
         if (SubAsmArray[y].Element == SubAsmArray[indexI].Components[x].AsmElementId)
-          addSubAssemblyToList(y, levelIn + 1, true);
+          addSubAssemblyToList(y, levelIn + 1, SubAsmArray[indexI].Components[x].Count, true);
       }
     }
   }
@@ -543,20 +536,26 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
 // From all of the assemblies, create a list of components by sub-assembly
 //
 function createTreeList() {
-  if (SubAsmArray.length == 0)
-    return;
+  // Find the top level assembly to start with
+  var topLevelAsmIndex = 0;
+  for (var x = 0; x < SubAsmArray.length; ++x) {
+    if (SubAsmArray[x].Element == theContext.elementId) {
+      topLevelAsmIndex = x;
+      break;
+    }
+  }
 
   // Walk from the top-level assembly
   var currentLevel = 0;
-  for (var x = 0; x < SubAsmArray[0].Components.length; ++x) {
+  for (var x = 0; x < SubAsmArray[topLevelAsmIndex].Components.length; ++x) {
     // Find out if this component exists in our flattened list yet
-    if (SubAsmArray[0].Components[x].AsmElementId == 0)
-      addComponentToList(0, x, currentLevel, false);
+    if (SubAsmArray[topLevelAsmIndex].Components[x].AsmElementId == 0)
+      addComponentToList(topLevelAsmIndex, x, currentLevel, false);
     else {
       // Find the sub-assembly to add ...
-      for (var y = 1; y < SubAsmArray.length; ++y) {
-        if (SubAsmArray[y].Element == SubAsmArray[0].Components[x].AsmElementId)
-          addSubAssemblyToList(y, currentLevel, true);
+      for (var y = 0; y < SubAsmArray.length; ++y) {
+        if (SubAsmArray[y].Element == SubAsmArray[topLevelAsmIndex].Components[x].AsmElementId)
+          addSubAssemblyToList(y, currentLevel, SubAsmArray[topLevelAsmIndex].Components[x].Count, true);
       }
     }
   }
@@ -685,7 +684,7 @@ function onGenerate3()
             currentItemNumber++;
           }
           else if (Comp2Array[i].Level == 0) {
-            ResultTable.append("<tr>" + "<td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
+            ResultTable.append("<tr data-depth='" + 0 + "' class='collapse level" + 0 + "'><td> </td><td>" + (currentItemNumber + 1) + "</td>" + totalImageString + "<td>" + Comp2Array[i].Name + "</td>" +
             "<td>" + Comp2Array[i].Count + "</td>" + "<td>" + Comp2Array[i].PartNumber + "</td>" +
             "<td>" + Comp2Array[i].Revision + "</td>" + "</tr>");
             currentItemNumber++;
