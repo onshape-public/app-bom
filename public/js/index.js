@@ -282,7 +282,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
             itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
           // Search through the list of components to find a match
-          saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
+          saveComponentToList(k, itemName, 0, compData.rootAssembly.instances[i].elementId);
         }
       }
 
