@@ -383,10 +383,8 @@ function onGenerate2() {
   return getPromise.then(function() {
     var listPromises = [];
 
-    // Find all of the components in those assemblies
-    for (var x = 0; x < SubAsmArray.length; ++x) {
-      listPromises.push(new Promise(function(resolve, reject) { findComponents(resolve, reject, SubAsmArray[x].Element, x); }));
-    }
+    // Find all of the components in the selected assembly (and it's sub-assemblies)
+    listPromises.push(new Promise(function(resolve, reject) { findComponents(resolve, reject, theContext.elementId, 0); }));
 
     return Promise.all(listPromises);
   }).then(function() {
