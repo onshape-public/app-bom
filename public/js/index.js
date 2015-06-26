@@ -205,7 +205,7 @@ function generateThumbs(argMap) {
 }
 
 function findAssemblies(resolve, reject) {
-  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId;
 
   $.ajax('/api/elements'+ params, {
     dataType: 'json',
@@ -267,6 +267,12 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
     success: function(data) {
       var compData = data;
 
+      // Find this assembly and make sure it's marked as used
+      for (var k = 0; k < SubAsmArray.length; ++k) {
+        if (SubAsmArray[k].Element == nextElement && SubAsmArray[k].Count == 0)
+          SubAsmArray[k].Count = 1;
+      }
+
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
       for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
         if (compData.rootAssembly.instances[i].type == "Part") {
@@ -294,19 +300,9 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
           }
         }
 
-        // Add this sub-assembly to the list
-        if (found == false) {
-          SubAsmArray[SubAsmArray.length] = {
-            Element: subElementId,
-            Count: 1,
-            Handled: false,
-            Name : asmName,
-            Components : []
-          };
-        }
-
         // Save this as a 'component' in the list too
-        saveComponentToList(asmIndex, asmName, subElementId, 0);
+        if (found == true)
+          saveComponentToList(asmIndex, asmName, subElementId, 0);
       }
 
       resolve(asmIndex);
@@ -421,6 +417,10 @@ function onGenerate2() {
 function createFlattenedList() {
   // Create a flattened list of components
   for (var i = 0; i < SubAsmArray.length; ++i) {
+    // If the assembly is not referenced, don't include it
+    if (SubAsmArray[i].Count == 0)
+      continue;
+
     for (var x = 0; x < SubAsmArray[i].Components.length; ++x) {
       // Skip over any sub-assemblies in the list
       if (SubAsmArray[i].Components[x].AsmElementId != 0)
