@@ -30,7 +30,9 @@ $(document).ready(function() {
 // update the list of elements in the context object
 function refreshContextElements() {
   var dfd = $.Deferred();
-  $.ajax('/api/elements'+ window.location.search, {
+  // Get all elements for the document ... only send D/W
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId;
+  $.ajax('/api/elements'+ params, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
