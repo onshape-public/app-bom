@@ -430,7 +430,7 @@ function flattenSubAssembly(assemblyIndex) {
       var found = false;
       var countMultiplier = 1;
       if (SubAsmArray[assemblyIndex].Count > 1)
-        countMultiplier = (SubAsmArray[assemblyIndex].Count - 1);
+        countMultiplier = SubAsmArray[assemblyIndex].Count;
 
       for (var y = 0; y < Comp2Array.length; ++ y) {
         if (Comp2Array[y].Name == SubAsmArray[assemblyIndex].Components[x].Name) {
