@@ -203,7 +203,7 @@ function generateThumbs(argMap) {
 }
 
 function findAssemblies(resolve, reject) {
-  $.ajax('/api/elements'+ window.location.search, {
+  $.ajax('/api/elements'+ window.location.search + "&elementId=" + theContext.elementId, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
@@ -383,17 +383,10 @@ function onGenerate2() {
     var bboxPromises = [];
 
     if (addImage) {
-      // Generate all of the thumbnails of the models
+      // Generate all of the thumbnails of the assemblies
       for (var x = 0; x < SubAsmArray.length; ++x) {
         var thumbPromise = generateBBox(SubAsmArray[x].Element);
         bboxPromises.push(thumbPromise);
- //       for (var y = 0; y < SubAsmArray[x].Components.length; ++y) {
- //         if (SubAsmArray[x].Components[y].AsmElementId == 0) {
-            // Generate the thumbnail for the parts too
- //           var nextThumbPromise = generateBBox(SubAsmArray[x].Components[y].ElementId);
- //          bboxPromises.push(nextThumbPromise);
- //         }
- //       }
       }
     }
 

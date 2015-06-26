@@ -68,8 +68,13 @@ var getDocuments = function(req, res) {
 };
 
 var getElementList = function(req, res) {
+  var url = 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements';
+  if (req.query.elementId) {
+    url += '/?elementId=' + req.query.elementId;
+  }
+
   request.get({
-    uri: 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements',
+    uri: url,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
