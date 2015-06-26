@@ -269,6 +269,8 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
 
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
       for (var i = 0; i < compData.rootAssembly.instances.length; ++i) {
+
+        // If it's a part, then add that to the list
         if (compData.rootAssembly.instances[i].type == "Part") {
           var bracketIndex = compData.rootAssembly.instances[i].name.lastIndexOf("<");
           var itemName = compData.rootAssembly.instances[i].name;
@@ -278,27 +280,27 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
           // Search through the list of components to find a match
           saveComponentToList(asmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
         }
-      }
 
-      // Find out if any sub-assemblies are referenced and if so, bump the assembly reference count
-      for (var z = 0; z < compData.subAssemblies.length; ++z) {
-        var subElementId = compData.subAssemblies[z].elementId;
-        var found = false;
-        var asmName;
-        for (var n = 0; n < SubAsmArray.length; ++n) {
-          if (subElementId == SubAsmArray[n].Element) {
-            SubAsmArray[n].Count++;
-            found = true;
-            asmName = SubAsmArray[n].Name;
-            break;
-          }
+        // If it's a sub-assembly instance, make sure we bump the count properly.
+        else if (compData.rootAssembly.instances[i].type == "Assembly") {
+            var subElementId = compData.rootAssembly.instances[i].elementId;
+            var found = false;
+            var asmName;
+            for (var n = 0; n < SubAsmArray.length; ++n) {
+              if (subElementId == SubAsmArray[n].Element) {
+                SubAsmArray[n].Count++;
+                found = true;
+                asmName = SubAsmArray[n].Name;
+                break;
+              }
+            }
+
+            // Save this as a 'component' in the list too
+            if (found == true)
+              saveComponentToList(asmIndex, asmName, subElementId, 0);
         }
-
-        // Save this as a 'component' in the list too
-        if (found == true)
-          saveComponentToList(asmIndex, asmName, subElementId, 0);
       }
-
+      
       resolve(asmIndex);
     },
     error: function() {
