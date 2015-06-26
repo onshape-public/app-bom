@@ -94,6 +94,34 @@ var getElementList = function(req, res) {
   });
 };
 
+var getAssemblyList = function(req, res) {
+  var url = 'https://partner.dev.onshape.com/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements?elementType=assembly';
+  if (req.query.elementId) {
+    url += '/?elementId=' + req.query.elementId;
+  }
+
+  request.get({
+    uri: url,
+    headers: {
+           'Authorization': 'Bearer ' + req.user.accessToken
+         }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    console.log('****** getAssemblyList - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting elements: ', err);
+      });
+    } else {
+      console.log('GET /api/documents/elements ?type=assembly error: ', data);
+    }
+  });
+};
+
+
 var getShadedView = function(req, res) {
   request.get({
     uri: 'https://partner.dev.onshape.com/api/assemblies/d/' + req.query.documentId +
@@ -221,6 +249,7 @@ var getStl = function(req, res) {
 router.get('/documents', getDocuments);
 router.get('/session', getSession);
 router.get('/elements', getElementList);
+router.get('/assemblies', getAssemblyList);
 router.get('/parts', getPartsList);
 router.get('/boundingBox', getBoundingBox);
 router.get('/definition', getAssemblyDefinition);

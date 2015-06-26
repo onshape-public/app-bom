@@ -19,9 +19,6 @@ $(document).ready(function() {
   theContext.documentId = theQuery.documentId;
   theContext.workspaceId = theQuery.workspaceId;
   theContext.elementId = theQuery.elementId;
-  theContext.partId = "";
-  theContext.parts = [];
-  theContext.selectedPart = -1;
   refreshContextElements();
 
 });
@@ -32,31 +29,28 @@ function refreshContextElements() {
   var dfd = $.Deferred();
   // Get all elements for the document ... only send D/W
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId;
-  $.ajax('/api/elements'+ params, {
+  $.ajax('/api/assemblies'+ params, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
-      // for each element, create a select option to make that element the current context
+      // for each assembly tab, create a select option to make that
+      // assembly the current context
       $("#elt-select").empty();
 
       var objects = data;
       var id;
 
       for (var i = 0; i < objects.length; ++i) {
-        if (objects[i].elementType == 'ASSEMBLY') {
-          $("#elt-select")
-              .append(
-              "<option value='" + objects[i].id + "'" +
-              (i == 0 ? " selected" : "") +
-              ">" +
-              objects[i].name + "</option>"
-          )
-              .change(function () {
-                id = $("#elt-select option:selected").val();
-                theContext.elementId = id;
-              }
-          );
-        }
+        $("#elt-select")
+            .append(
+                    "<option value='" + objects[i].id + "'" +
+                    (i == 0 ? " selected" : "") + ">" +
+                    objects[i].name + "</option>"
+                   )
+            .change(function () {
+              id = $("#elt-select option:selected").val();
+              theContext.elementId = id;
+              });
       }
       theContext.elementId = $("#elt-select option:selected").val();
     }
@@ -593,7 +587,6 @@ function onGenerate3()
     success: function(data) {
       // Find all components of the assembly
       var obj = data;
-      theContext.parts = obj;       // remember details to use in api calls later
 
       // Keep a count of repeated components
       var compArray = {};
