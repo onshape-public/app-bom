@@ -294,9 +294,19 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
           }
         }
 
+        // Add this sub-assembly to the list
+        if (found == false) {
+          SubAsmArray[SubAsmArray.length] = {
+            Element: subElementId,
+            Count: 1,
+            Handled: false,
+            Name : asmName,
+            Components : []
+          };
+        }
+
         // Save this as a 'component' in the list too
-        if (found == true)
-          saveComponentToList(asmIndex, asmName, subElementId, 0);
+        saveComponentToList(asmIndex, asmName, subElementId, 0);
       }
 
       resolve(asmIndex);
