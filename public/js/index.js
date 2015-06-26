@@ -268,9 +268,12 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
       var compData = data;
 
       // Find this assembly and make sure it's marked as used
+      var thisAsmIndex = 0;
       for (var k = 0; k < SubAsmArray.length; ++k) {
-        if (SubAsmArray[k].Element == nextElement && SubAsmArray[k].Count == 0)
-          SubAsmArray[k].Count = 1;
+        if (SubAsmArray[k].Element == nextElement) {
+          thisAsmIndex = k;
+          if (SubAsmArray[k].Count == 0)
+            SubAsmArray[k].Count = 1;
       }
 
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
@@ -282,7 +285,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
             itemName = compData.rootAssembly.instances[i].name.substring(0, bracketIndex - 1);
 
           // Search through the list of components to find a match
-          saveComponentToList(k, itemName, 0, compData.rootAssembly.instances[i].elementId);
+          saveComponentToList(thisAsmIndex, itemName, 0, compData.rootAssembly.instances[i].elementId);
         }
       }
 
