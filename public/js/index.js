@@ -508,8 +508,8 @@ function addComponentToList(indexI, indexX, levelIn, forceAdd) {
 function addSubAssemblyToList(indexI, levelIn, recurse) {
   // Put on the sub-assembly with the collapse option as TRUE
   var asmCount = SubAsmArray[indexI].Count;
-  if (recurse == true)
-    asmCount = 1;
+//  if (recurse == true)
+//    asmCount = 1;
   Comp2Array[Comp2Array.length] = {
     Name : SubAsmArray[indexI].Name,
     Count : asmCount,
