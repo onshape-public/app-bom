@@ -274,6 +274,7 @@ function findComponents(resolve, reject, nextElement, asmIndex) {
           thisAsmIndex = k;
           if (SubAsmArray[k].Count == 0)
             SubAsmArray[k].Count = 1;
+        }
       }
 
       // Get the top-level components for this assembly ... gather a list of sub-assemblies to process as well
