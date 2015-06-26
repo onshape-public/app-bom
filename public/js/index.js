@@ -548,43 +548,6 @@ function addSubAssemblyToList(indexI, levelIn, recurse) {
 //
 // From all of the assemblies, create a list of components by sub-assembly
 //
-function createLayeredList() {
-  // Find the top level assembly to start with
-  var topLevelAsmIndex = 0;
-  for (var x = 0; x < SubAsmArray.length; ++x) {
-    if (SubAsmArray[x].Element == theContext.elementId) {
-      topLevelAsmIndex = x;
-      break;
-    }
-  }
-
-  // Add all components for this assembly first
-  for (var y = 0; y < SubAsmArray[topLevelAsmIndex].Components.length; ++y) {
-    // Find out if this component exists in our flattened list yet
-    if (SubAsmArray[topLevelAsmIndex].Components[y].AsmElementId == 0)
-      addComponentToList(topLevelAsmIndex, y, 0, false);
-  }
-
-  // Now, add the sub-assemblies
-  for (var z = 0; z < SubAsmArray[topLevelAsmIndex].Components.length; ++z) {
-    // Find out if this component exists in our flattened list yet
-    if (SubAsmArray[topLevelAsmIndex].Components[z].AsmElementId > 0) {
-      // Find the index of this sub-assembly
-      var subLevelAsmIndex = 0;
-      for (var w = 0; w < SubAsmArray.length; ++w) {
-        if (SubAsmArray[w].Element == SubAsmArray[topLevelAsmIndex].Components[z].AsmElementId) {
-          subLevelAsmIndex = w;
-          break;
-        }
-      }
-      addSubAssemblyToList(subLevelAsmIndex, 0, false);
-    }
-  }
-}
-
-//
-// From all of the assemblies, create a list of components by sub-assembly
-//
 function createTreeList() {
   if (SubAsmArray.length == 0)
     return;
@@ -613,10 +576,6 @@ function onGenerate3()
   var e = document.getElementById("type-select");
   if (e.selectedIndex == 0)
     createFlattenedList();
-  else if (e.selectedIndex == 1) {
-    isFlat = false;
-    createLayeredList();
-  }
   else {
     isFlat = false;
     createTreeList();
