@@ -205,7 +205,9 @@ function generateThumbs(argMap) {
 }
 
 function findAssemblies(resolve, reject) {
-  $.ajax('/api/elements'+ window.location.search + "&elementId=" + theContext.elementId, {
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
+
+  $.ajax('/api/elements'+ params, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
