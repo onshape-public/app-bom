@@ -13,6 +13,7 @@ var uuid = require('uuid');
 
 var api = require('./routes/api');
 var index = require('./routes/index');
+var grantDenied = require('./routes/grantDenied');
 
 var client;
 if (process.env.REDISTOGO_URL) {
@@ -47,7 +48,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 app.use('/signin', express.static(path.join(__dirname, '..', 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/grantDenied', express.static('Application has been denied access to Onshape'));
 
 app.use(session({
   store: new RedisStore({
@@ -64,6 +64,7 @@ app.use(passport.session());
 app.use('/api', api);
 
 app.get('/', index.renderPage);
+app.get('/grantDenied', grantDenied.renderPage);
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the
