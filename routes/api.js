@@ -214,6 +214,27 @@ var getAssemblyDefinition = function(req, res) {
   });
 };
 
+var getMetadata = function(req, res) {
+   request.get({
+    uri: 'https://partner.dev.onshape.com/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/partid/' + req.query.partId + '/metadata',
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getMetadata(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting part metadata: ', err);
+      });
+    } else {
+      console.log('GET /api/parts/metadata error: ', data);
+    }
+  });
+};
+
 var getStl = function(req, res) {
   var url = 'https://partner.dev.onshape.com/api/documents/' + req.query.documentId + '/export/' + req.query.stlElementId +
       '?workspaceId=' + req.query.workspaceId +
@@ -254,6 +275,7 @@ router.get('/parts', getPartsList);
 router.get('/boundingBox', getBoundingBox);
 router.get('/definition', getAssemblyDefinition);
 router.get('/shadedView', getShadedView);
+router.get('/metadata', getMetadata)
 
 
 module.exports = router;
