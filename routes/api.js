@@ -235,34 +235,37 @@ var getMetadata = function(req, res) {
   });
 };
 
-var getStl = function(req, res) {
-  var url = 'https://partner.dev.onshape.com/api/documents/' + req.query.documentId + '/export/' + req.query.stlElementId +
-      '?workspaceId=' + req.query.workspaceId +
-      '&format=STL&mode=' + 'text'  +
-      '&scale=1&units=inch';
-  if (req.query.partId !== '') {
-    url += '&partId=' + req.query.partId;
-  }
-  if (req.query.angleTolerance !== '' && req.query.chordTolerance !== '') {
-    url += '&angleTolerance=' + req.query.angleTolerance +'&chordTolerance=' + req.query.chordTolerance;
-  }
+var setWebhooks = function(req, res) {
+  var eventList = [ "onshape.model.lifecycle.changed" ];
+  var options = { collapseEvents : true };
+  var urlNotify = "https://onshape-appstore-bom.herokuapp.com/notify";
+  var filter = "{$DocumentId} = '" + req.query.documentId + "' && " +
+               "{$WorkspaceId} = '" + req.query.workspaceId + "' && " +
+               "{$ElementId} = '" + req.query.elementId + "'";
 
-  request.get({
-    uri: url,
+  request.post({
+    uri: 'https://partner.dev.onshape.com/api/webhooks/',
+    body: {
+      url : urlNotify,
+      events : eventList,
+      filter : filter,
+      options : options
+    },
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
-    }
+    },
+    json : true
   }).then(function(data) {
     res.send(data);
   }).catch(function(data) {
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        getStl(req, res);
+        setWebhooks(req, res);
       }).catch(function(err) {
-        console.log('Error refreshing token or exporting stl data: ', err);
+        console.log('*** Error refreshing token or setting webhooks: ', err);
       });
     } else {
-      console.log('GET /api/export error: ', data);
+      console.log('*** POST /api/webhooks error: ', data);
     }
   });
 };
@@ -275,7 +278,7 @@ router.get('/parts', getPartsList);
 router.get('/boundingBox', getBoundingBox);
 router.get('/definition', getAssemblyDefinition);
 router.get('/shadedView', getShadedView);
-router.get('/metadata', getMetadata)
-
+router.get('/metadata', getMetadata);
+router.get('/webhooks', setWebhooks);
 
 module.exports = router;
