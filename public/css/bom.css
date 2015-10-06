@@ -1,3 +1,9 @@
+@media print {
+  html, body {
+    height: 99%;
+  }
+}
+
 body {
   font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
   padding: 10;
