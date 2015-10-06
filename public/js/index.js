@@ -4,6 +4,7 @@
 var theContext = {};
 var ResultTable;
 
+
 ////////////////////////////////////////////////////////////////
 // startup
 //
@@ -34,6 +35,12 @@ $(document).ready(function() {
   p.style.display = "none";
 });
 
+//
+// When the model changes, mark the current BOM as dirty
+//
+function onModelChanged() {
+  console.log("** Event - Model Changed");
+}
 // update the list of elements in the context object
 function refreshContextElements() {
   var dfd = $.Deferred();
@@ -53,14 +60,25 @@ function refreshContextElements() {
       for (var i = 0; i < objects.length; ++i) {
         $("#elt-select")
             .append(
-            "<option value='" + objects[i].id + "'" +
-            (i == 0 ? " selected" : "") + ">" +
-            objects[i].name + "</option>"
-        )
+                    "<option value='" + objects[i].id + "'" +
+                    (i == 0 ? " selected" : "") + ">" +
+                    objects[i].name + "</option>"
+                   )
             .change(function () {
               id = $("#elt-select option:selected").val();
               theContext.elementId = id;
-            });
+              });
+
+        // Setup the webhook for model changes
+        var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + objects[i].id;
+        $.ajax('/api/webhooks' + params, {
+          dataType: 'json',
+          type: 'GET',
+          success: function(data) {
+            console.log("*** SUCCESS for webhook ");
+ //           window.addEventListener( "onshape.model.lifecycle.changed", onModelChanged, false );
+          }
+        });
       }
       theContext.elementId = $("#elt-select option:selected").val();
     }
@@ -177,10 +195,10 @@ function onGenerate() {
 // Find the metadata for a given part ... Revision, Part Number
 function findMetadata(resolve, reject, index, elementId, partId) {
   $.ajax('/api/metadata'+
-  "?documentId=" + theContext.documentId +
-  "&workspaceId=" + theContext.workspaceId +
-  "&elementId=" + elementId +
-  "&partId=" + partId, {
+         "?documentId=" + theContext.documentId +
+         "&workspaceId=" + theContext.workspaceId +
+         "&elementId=" + elementId +
+         "&partId=" + partId, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
@@ -211,7 +229,7 @@ function onGenerate2() {
   ResultImage.addClass('ResultImage');
 
   var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId +
-      "&outputHeight=600&outputWidth=600&pixelSize=" + realSize / 600 +
+          "&outputHeight=600&outputWidth=600&pixelSize=" + realSize / 600 +
       "&viewMatrix1=" + 0.707 + "&viewMatrix2=" + 0.707 + "&viewMatrix3=" + 0 + "&viewMatrix4=" + (-tX) +
       "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + (-tY) +
       "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + (-tZ);
@@ -386,7 +404,7 @@ function onGenerate3() {
 
     // Check against all other parts to see if this part is already in the list (check vs. PartId)
     if (Parts[x].isUsed == true) {
-      for (var y = x + 1; y < Parts.length; ++y) {
+       for (var y = x + 1; y < Parts.length; ++y) {
         if (Parts[y].isUsed == false)
           continue;
 
@@ -417,9 +435,9 @@ function onGenerate3() {
         continue;
 
       ResultTable.append("<tr>" + "<td> </td><td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Parts[i].name + "</td>" +
-      "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
-      "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
-      currentSubItemNumber++;
+          "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
+          "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
+          currentSubItemNumber++;
     }
 
     // We can now save this off in other formats (like CSV)
@@ -442,10 +460,10 @@ function onSave() {
     if (Parts[i].isUsed == true) {
 
       myCsv += (currentItemNumber + 1) + "," +
-      Parts[i].name + "," +
-      Parts[i].count + "," +
-      Parts[i].partnumber + "," +
-      Parts[i].revision + "\n";
+        Parts[i].name + "," +
+        Parts[i].count + "," +
+        Parts[i].partnumber + "," +
+        Parts[i].revision + "\n";
     }
   }
 
@@ -484,7 +502,7 @@ function onPrint() {
   b = document.getElementById("elt-select");
   b.style.display = "none";
 
-  window.print();
+   window.print();
 
   // Put the UI back ...
   b = document.getElementById("element-save-csv");

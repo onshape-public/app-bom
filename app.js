@@ -64,7 +64,15 @@ app.use(passport.session());
 app.use('/api', api);
 
 app.get('/', index.renderPage);
+app.post('/notify', sendNotify);
 app.get('/grantDenied', grantDenied.renderPage);
+
+function sendNotify(req, res) {
+  console.log("** SERVER EVENT - Index Notify");
+  console.log("    received notification of event - " + req.body.event);
+
+  res.send("ok");
+}
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -91,6 +99,10 @@ function storeExtraParams(req, res) {
     elementId : elId
   };
 
+  var stateString = JSON.stringify(state);
+  var uniqueID = "state" + passport.session();
+  client.set(uniqueID, stateString);
+
   var id = uuid.v4(state);
   StateMap[id] = state;
 
@@ -107,9 +119,15 @@ app.use('/oauthRedirect',
     function(req, res) {
       var id = req.query.state;
       var params = StateMap[id];
-      var url = '/?' + 'documentId=' + params.documentId + '&workspaceId=' + params.workspaceId + '&elementId=' + params.elementId;
-
-      res.redirect(url);
+      var uniqueID = "state" + passport.session();
+      client.get(uniqueID, function(err, reply) {
+        // reply is null when the key is missing
+        if (reply != null) {
+          var newParams = JSON.parse(reply);
+          var url = '/?' + 'documentId=' + newParams.documentId + '&workspaceId=' + newParams.workspaceId + '&elementId=' + newParams.elementId;
+          res.redirect(url);
+        }
+      });
     });
 
 /// catch 404 and forward to error handler

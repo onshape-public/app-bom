@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Onshape BOM Sample Application</title>
-
+  <head>
+  	<meta charset="utf-8">
+  	<title>Onshape BOM Sample Application</title>
+    
     <link rel="stylesheet" href="jquery-ui-1.11.1.custom/jquery-ui.min.css">
     <link rel="stylesheet" href="css/bom.css">
 
-</head>
+  </head>
 
-<body>
+  <body>
 
-<script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
-<script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
-<script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
-<script src="js/index.js"></script>
+    <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
+    <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
+    <script src="js/index.js"></script>
 
-<div id="context-table">
-    <b>Bill of Materials:</b>
-    <select id="elt-select"></select>
-    <select id="type-select">
-        <option>Flattened Component List</option>
-        <option>Tree List</option>
-    </select>
-    <button type="button" id="element-generate">Create</button>
-    <button type="button" id="element-save-csv">Save as CSV</button>
-    <button type="button" id="element-print">Print</button>
-</div>
+    <div id="context-table">
+       <b>Bill of Materials:</b>
+       <select id="elt-select"></select>
+       <select id="type-select">
+          <option>Flattened Component List</option>
+          <option>Tree List</option>
+       </select>
+       <button type="button" id="element-generate">Create</button>
+       <button type="button" id="element-save-csv">Save as CSV</button>
+       <button type="button" id="element-print">Print</button>
+    </div>
 
-<div id="bomResults">
-</div>
+    <div id="bomResults">
+    </div>
 
-</body>
+  </body>
 </html>
