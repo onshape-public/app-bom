@@ -68,10 +68,7 @@ app.post('/notify', sendNotify);
 app.get('/grantDenied', grantDenied.renderPage);
 
 function sendNotify(req, res) {
-  console.log("** SERVER EVENT - Index Notify");
-  console.log("    received notification of event - " + req.body.event);
-
-  res.send("ok");
+   res.send("ok");
 }
 
 // GET /oauthSignin
