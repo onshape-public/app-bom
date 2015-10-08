@@ -3,13 +3,11 @@
     height: 99%;
   }
 }
-
 body {
   font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
-  padding: 10;
-  margin: 10;
+  padding: 10px;
+  margin: 10px;
 }
-
 h2 {
   font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
 }
