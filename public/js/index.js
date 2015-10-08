@@ -39,6 +39,7 @@ $(document).ready(function() {
 // When the model changes, mark the current BOM as dirty
 //
 function onModelChanged() {
+  console.log("** Event - Model Changed");
 }
 // update the list of elements in the context object
 function refreshContextElements() {
@@ -74,6 +75,8 @@ function refreshContextElements() {
           dataType: 'json',
           type: 'GET',
           success: function(data) {
+            console.log("*** SUCCESS for webhook ");
+ //           window.addEventListener( "onshape.model.lifecycle.changed", onModelChanged, false );
           }
         });
       }
@@ -170,6 +173,10 @@ function onGenerate() {
       var xCenter = (xHigh + xLow) / 2;
       var yCenter = (yHigh + yLow) / 2;
       var zCenter = (zHigh + zLow) / 2;
+
+//      tX = -(xCenter * 0.707 + yCenter * -0.409 + zCenter * 0.577);
+//      tY = -(xCenter * 0.707 + yCenter * 0.409 + zCenter * -0.577);
+//      tZ = -(xCenter * 0 + yCenter * 0.816 + zCenter * 0.577);
 
       tX = (xCenter * 0.707 + yCenter * 0.707 + zCenter * 0);
       tY = (xCenter * -0.409 + yCenter * 0.409 + zCenter * 0.816);
