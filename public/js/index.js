@@ -50,8 +50,6 @@ var SubAsmIds = [];
 //
 // Setup a timer to poll BOM server if an update was made to the model
 var IntervalId = window.setInterval( function(){
-  console.log("** Check for Event - Model Changed");
-
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
 
   $.ajax('/api/modelchange'+ params, {
@@ -64,11 +62,8 @@ var IntervalId = window.setInterval( function(){
         var e = document.getElementById("element-model-change-message");
         e.style.display = "initial";
       }
-
-      console.log("**   Check responded with " + objects.change);
     },
     error: function(data) {
-      console.log("**   Check failed " + data.change);
     }
   });
 }, 10000 );
