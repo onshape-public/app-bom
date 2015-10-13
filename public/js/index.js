@@ -64,7 +64,7 @@ var IntervalId = window.setInterval( function(){
       }
     },
     error: function(data) {
-    }
+     }
   });
 }, 10000 );
 
@@ -158,6 +158,10 @@ function onGenerate() {
 
   b = document.getElementById("element-model-change-message");
   b.style.display = "none";
+
+  b = document.getElementById("element-generate");
+  b.style.display = "none";
+
 
   // Clear any old data
   AsmOccurences = [];
@@ -458,6 +462,10 @@ function onGenerate3() {
     b.style.display = "initial";
     var p = document.getElementById("element-print");
     p.style.display = "initial";
+
+    b = document.getElementById("element-generate");
+    b.style.display = "initial";
+
   });
 }
 
