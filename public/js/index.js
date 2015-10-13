@@ -102,7 +102,6 @@ function refreshContextElements() {
           dataType: 'json',
           type: 'GET',
           success: function(data) {
-            console.log("*** SUCCESS for webhook ");
           }
         });
       }
