@@ -3,11 +3,13 @@
     height: 99%;
   }
 }
+
 body {
   font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
   padding: 10;
   margin: 10;
 }
+
 h2 {
   font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
 }
@@ -48,4 +50,13 @@ caption {
 
 button {
   margin : 10px;
+}
+
+.infomessage {
+  margin : 10px;
+  margin-left : 50px;
+  color : red;
+  font-family: Open-Sans;
+  font-size : 10pt;
+  padding  : 40px;
 }

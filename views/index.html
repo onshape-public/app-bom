@@ -9,13 +9,11 @@
 
   </head>
 
-  <body>
-
-    <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
-    <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
-    <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
-    <script src="js/index.js"></script>
-
+  <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
+  <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
+  <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
+  <script src="js/index.js"></script>
+   <body>
     <div id="context-table">
        <b>Bill of Materials:</b>
        <select id="elt-select"></select>
@@ -26,6 +24,9 @@
        <button type="button" id="element-generate">Create</button>
        <button type="button" id="element-save-csv">Save as CSV</button>
        <button type="button" id="element-print">Print</button>
+       <div class="infomessage" id="element-model-change-message">
+            <p><i>* Model has been changed. BOM may not be up to date. *</i></p>
+       </div>
     </div>
 
     <div id="bomResults">

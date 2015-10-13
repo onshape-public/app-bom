@@ -1,8 +1,21 @@
 var express = require('express');
+var session = require('express-session');
+var redis = require('redis');
+
 var router = express.Router();
 var authentication = require('../authentication');
 var request = require('request-promise');
 var url = require('url');
+
+var client;
+if (process.env.REDISTOGO_URL) {
+  var rtg   = require("url").parse(process.env.REDISTOGO_URL);
+  client = require("redis").createClient(rtg.port, rtg.hostname);
+
+  client.auth(rtg.auth.split(":")[1]);
+} else {
+  client = redis.createClient();
+}
 
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
@@ -17,6 +30,28 @@ function ensureAuthenticated(req, res, next) {
     authUri: authentication.getAuthUri(),
     msg: 'Authentication required.'
   });
+}
+
+router.sendNotify = function(req, res) {
+  console.log("** SERVER EVENT - Notify ");
+  console.log("    received notification of event - " + req.body.event);
+
+  if (req.body.event == 'onshape.model.lifecycle.changed') {
+    var state = {
+      elementId : req.body.elementId,
+      change : true
+    };
+
+
+    var stateString = JSON.stringify(state);
+    var uniqueID = "change" + req.body.elementId;
+
+    console.log("   uniqueID - " + client + ", " + uniqueID);
+
+    client.set(uniqueID, stateString);
+  }
+
+  res.send("ok");
 }
 
 router.post('/logout', function(req, res) {
@@ -270,6 +305,41 @@ var setWebhooks = function(req, res) {
   });
 };
 
+var checkModelChange = function(req, res) {
+  var data = {
+    statusCode : 200,
+    change : false
+  };
+
+  // Get the current setting from Redis (if there is one)
+  var uniqueID = "change" + req.query.elementId;
+
+  console.log("** CHECK State - " + uniqueID + ", " + client);
+
+  client.get(uniqueID, function(err, reply) {
+    // reply is null when the key is missing
+    if (reply != null) {
+      var newParams = JSON.parse(reply);
+      data.change = newParams.change;
+
+      console.log("** CLIENT State Check - " + newParams.change);
+
+      // Now that we have the value, clear it in Redis
+      var state = {
+        elementId : req.query.elementId,
+        change : false
+      };
+
+      console.log("** RESET State - " + uniqueID);
+
+      var stateString = JSON.stringify(state);
+      client.set(uniqueID, stateString);
+    }
+
+    res.send(data);
+  });
+}
+
 router.get('/documents', getDocuments);
 router.get('/session', getSession);
 router.get('/elements', getElementList);
@@ -280,5 +350,6 @@ router.get('/definition', getAssemblyDefinition);
 router.get('/shadedView', getShadedView);
 router.get('/metadata', getMetadata);
 router.get('/webhooks', setWebhooks);
+router.get('/modelchange', checkModelChange);
 
 module.exports = router;

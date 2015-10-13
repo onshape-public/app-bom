@@ -4,7 +4,6 @@
 var theContext = {};
 var ResultTable;
 
-
 ////////////////////////////////////////////////////////////////
 // startup
 //
@@ -33,14 +32,47 @@ $(document).ready(function() {
 
   var p = document.getElementById("element-print");
   p.style.display = "none";
+
+  var c = document.getElementById("element-model-change-message");
+  c.style.display = "none";
 });
 
 //
-// When the model changes, mark the current BOM as dirty
+// DATA that we need to hold onto for the selected assembly
+var AsmOccurences = [];
+var AsmInstances = [];
+var AsmParts = [];
+var AsmSubAssemblies = [];
+
+var Parts = [];
+var SubAsmIds = [];
+
 //
-function onModelChanged() {
-  console.log("** Event - Model Changed");
-}
+// Setup a timer to poll BOM server if an update was made to the model
+var IntervalId = window.setInterval( function(){
+  console.log("** Check for Event - Model Changed");
+
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
+
+  $.ajax('/api/modelchange'+ params, {
+    dataType: 'json',
+    type: 'GET',
+    success: function(data) {
+      var objects = data;
+      if (objects.change == true && Parts.length > 0) {
+        // Show the message to say the BOM may be invalid
+        var e = document.getElementById("element-model-change-message");
+        e.style.display = "initial";
+      }
+
+      console.log("**   Check responded with " + objects.change);
+    },
+    error: function(data) {
+      console.log("**   Check failed " + data.change);
+    }
+  });
+}, 10000 );
+
 // update the list of elements in the context object
 function refreshContextElements() {
   var dfd = $.Deferred();
@@ -76,7 +108,6 @@ function refreshContextElements() {
           type: 'GET',
           success: function(data) {
             console.log("*** SUCCESS for webhook ");
- //           window.addEventListener( "onshape.model.lifecycle.changed", onModelChanged, false );
           }
         });
       }
@@ -85,16 +116,6 @@ function refreshContextElements() {
   });
   return dfd.promise();
 }
-
-//
-// DATA that we need to hold onto for the selected assembly
-var AsmOccurences = [];
-var AsmInstances = [];
-var AsmParts = [];
-var AsmSubAssemblies = [];
-
-var Parts = [];
-var SubAsmIds = [];
 
 //
 // Get the definition of the selected assembly
@@ -141,6 +162,9 @@ function onGenerate() {
   b = document.getElementById("element-print");
   b.style.display = "none";
 
+  b = document.getElementById("element-model-change-message");
+  b.style.display = "none";
+
   // Clear any old data
   AsmOccurences = [];
   AsmInstances = [];
@@ -174,10 +198,6 @@ function onGenerate() {
       var yCenter = (yHigh + yLow) / 2;
       var zCenter = (zHigh + zLow) / 2;
 
-//      tX = -(xCenter * 0.707 + yCenter * -0.409 + zCenter * 0.577);
-//      tY = -(xCenter * 0.707 + yCenter * 0.409 + zCenter * -0.577);
-//      tZ = -(xCenter * 0 + yCenter * 0.816 + zCenter * 0.577);
-
       tX = (xCenter * 0.707 + yCenter * 0.707 + zCenter * 0);
       tY = (xCenter * -0.409 + yCenter * 0.409 + zCenter * 0.816);
       tZ = (xCenter * 0.577 + yCenter * -0.577 + zCenter * 0.577);
@@ -186,7 +206,6 @@ function onGenerate() {
       onGenerate2();
     },
     error: function(data) {
-      console.log("****** GET BOUNDING BOX - FAILURE - index.js");
     }
   });
 }
@@ -464,6 +483,7 @@ function onSave() {
         Parts[i].count + "," +
         Parts[i].partnumber + "," +
         Parts[i].revision + "\n";
+      currentItemNumber++;
     }
   }
 

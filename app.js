@@ -13,7 +13,6 @@ var uuid = require('uuid');
 
 var api = require('./routes/api');
 var index = require('./routes/index');
-var grantDenied = require('./routes/grantDenied');
 
 var client;
 if (process.env.REDISTOGO_URL) {
@@ -64,15 +63,8 @@ app.use(passport.session());
 app.use('/api', api);
 
 app.get('/', index.renderPage);
-app.post('/notify', sendNotify);
-app.get('/grantDenied', grantDenied.renderPage);
-
-function sendNotify(req, res) {
-  console.log("** SERVER EVENT - Index Notify");
-  console.log("    received notification of event - " + req.body.event);
-
-  res.send("ok");
-}
+app.post('/notify', api.sendNotify);
+app.get('/grantDenied', express.static(path.join(__dirname, 'views', 'grantDenied.html')));
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -85,8 +77,6 @@ app.use('/oauthSignin', storeExtraParams,
       // function will not be called.
     }
 );
-
-var StateMap = {};
 
 function storeExtraParams(req, res) {
   var docId = req.query.documentId;
@@ -103,10 +93,7 @@ function storeExtraParams(req, res) {
   var uniqueID = "state" + passport.session();
   client.set(uniqueID, stateString);
 
-  var id = uuid.v4(state);
-  StateMap[id] = state;
-
-  return passport.authenticate("onshape", {state: id})(req, res);
+  return passport.authenticate("onshape")(req, res);
 }
 
 // GET /oauthRedirect
@@ -117,8 +104,6 @@ function storeExtraParams(req, res) {
 app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
-      var id = req.query.state;
-      var params = StateMap[id];
       var uniqueID = "state" + passport.session();
       client.get(uniqueID, function(err, reply) {
         // reply is null when the key is missing
