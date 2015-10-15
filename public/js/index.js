@@ -283,11 +283,11 @@ function onGenerate2() {
   var asmName = e.options[e.selectedIndex].text;
   ResultTable.append("<caption>"+ asmName + "</caption>");
   ResultTable.append("<th style='min-width:25px' align='left'> </th>");
-  ResultTable.append("<th style='min-width:125px' align='center'>Item Number</th>");
+  ResultTable.append("<th style='min-width:125px' align='center'>Item number</th>");
 
-  ResultTable.append("<th style='min-width:200px' align='left'>Component Name</th>");
+  ResultTable.append("<th style='min-width:200px' align='left'>Component name</th>");
   ResultTable.append("<th style='min-width:100px' align='center'>Count</th>");
-  ResultTable.append("<th style='min-width:150px' align='center'>Part Number</th>");
+  ResultTable.append("<th style='min-width:150px' align='center'>Part number</th>");
   ResultTable.append("<th style='min-width:100px' align='center'>Revision</th>");
 
   $('#bomResults').append(this.block);
@@ -474,7 +474,7 @@ function onGenerate3() {
 //
 function onSave() {
   // Walk back throught the data and write out CSV format
-  var myCsv = "Item Number,Component Name,Count,Part Number,Revision\n";
+  var myCsv = "Item number,Component name,Count,Part number,Revision\n";
 
   var currentItemNumber = 0;
   for (var i = 0; i < Parts.length; ++i) {
