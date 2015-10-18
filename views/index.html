@@ -3,15 +3,16 @@
   <head>
   	<meta charset="utf-8">
   	<title>Onshape BOM Sample Application</title>
-    
-    <link rel="stylesheet" href="jquery-ui-1.11.1.custom/jquery-ui.min.css">
-    <link rel="stylesheet" href="css/bom.css">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bom.css" />
 
   </head>
 
-  <script src="jquery-ui-1.11.1.custom/external/jquery/jquery.js"></script>
-  <script src="jquery-ui-1.11.1.custom/jquery-ui.min.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/jquery.min.js"></script>
   <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
   <script src="js/index.js"></script>
    <body>
     <div id="context-table">
@@ -21,9 +22,9 @@
           <option>Flattened Component List</option>
           <option>Tree List</option>
        </select>
-       <button type="button" id="element-generate">Create</button>
-       <button type="button" id="element-save-csv">Save as CSV</button>
-       <button type="button" id="element-print">Print</button>
+       <button class="btn btn-primary btn-sm clearfix" id="element-generate">Create</button>
+       <button class="btn btn-default btn-sm clearfix" id="element-save-csv">Save as CSV</button>
+       <button class="btn btn-default btn-sm clearfix" id="element-print">Print</button>
        <div class="infomessage" id="element-model-change-message">
             <p><i>* Model has been changed. BOM may not be up to date. *</i></p>
        </div>

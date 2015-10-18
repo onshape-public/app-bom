@@ -274,7 +274,7 @@ function onGenerate2() {
   this.block = $('<div class="block" position="relative"></div>');
   this.block.attr("bom", "bom")
   this.block.append(ResultImage);
-  ResultTable = $('<table valign="center"></table>');
+  ResultTable = $('<table class="table-striped" valign="center"></table>');
   ResultTable.addClass('resultTable');
   this.block.append(ResultTable);
 
@@ -282,13 +282,12 @@ function onGenerate2() {
   var e = document.getElementById("elt-select");
   var asmName = e.options[e.selectedIndex].text;
   ResultTable.append("<caption>"+ asmName + "</caption>");
-  ResultTable.append("<th style='min-width:25px' align='left'> </th>");
-  ResultTable.append("<th style='min-width:125px' align='center'>Item number</th>");
+  ResultTable.append("<th align='center'>Item number</th>");
 
-  ResultTable.append("<th style='min-width:200px' align='left'>Component name</th>");
-  ResultTable.append("<th style='min-width:100px' align='center'>Count</th>");
-  ResultTable.append("<th style='min-width:150px' align='center'>Part number</th>");
-  ResultTable.append("<th style='min-width:100px' align='center'>Revision</th>");
+  ResultTable.append("<th align='left'>Component name</th>");
+  ResultTable.append("<th align='center'>Count</th>");
+  ResultTable.append("<th align='center'>Part number</th>");
+  ResultTable.append("<th align='center'>Revision</th>");
 
   $('#bomResults').append(this.block);
 
@@ -451,7 +450,7 @@ function onGenerate3() {
       if (Parts[i].isUsed == false)
         continue;
 
-      ResultTable.append("<tr>" + "<td> </td><td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Parts[i].name + "</td>" +
+      ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Parts[i].name + "</td>" +
           "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
           "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
           currentSubItemNumber++;
