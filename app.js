@@ -64,7 +64,7 @@ app.use('/api', api);
 
 app.get('/', index.renderPage);
 app.post('/notify', api.sendNotify);
-app.get('/grantDenied', express.static(path.join(__dirname, 'views', 'grantDenied.html')));
+app.get('/grantDenied', index.grantDenied);
 
 // GET /oauthSignin
 //   Use passport.authenticate() as route middleware to authenticate the
