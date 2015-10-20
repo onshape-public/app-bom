@@ -296,6 +296,15 @@ function onGenerate2() {
 
   // Find all assemblies in the model
   return getPromise.then(function() {
+
+    // If there is nothing to do (assembly is empty) then just bail out
+    if (AsmInstances.length == 0) {
+      var b = document.getElementById("element-generate");
+      b.style.display = "initial";
+
+      return;
+    }
+
     // Match up revision/part number and total counts here
     onGenerate3();
   });
