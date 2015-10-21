@@ -5,6 +5,9 @@ var OnshapeStrategy = require('passport-onshape').Strategy;
 var oauthClientId;
 var oauthClientSecret;
 
+var platformPath = process.env.ONSHAPE_PLATFORM;
+var hostedPath = process.env.ONSHAPE_HOST;
+
 if (process.env.OAUTH_CLIENT_ID) {
   oauthClientId = process.env.OAUTH_CLIENT_ID;
 }
@@ -23,10 +26,10 @@ function init() {
   passport.use(new OnshapeStrategy({
       clientID: oauthClientId,
       clientSecret: oauthClientSecret,
-      callbackURL: "https://onshape-app-bom.herokuapp.com/oauthRedirect",
-      authorizationURL: "https://partner.dev.onshape.com/oauth/authorize",
-      tokenURL: "https://partner.dev.onshape.com/oauth/token",
-      userProfileURL: "https://partner.dev.onshape.com/api/users/current"
+      callbackURL: hostedPath + "/oauthRedirect",
+      authorizationURL: platformPath + "/oauth/authorize",
+      tokenURL: platformPath + "/oauth/token",
+      userProfileURL: platformPath + "/api/users/current"
     },
     function(accessToken, refreshToken, profile, done) {
       // asynchronous verification, for effect...
@@ -64,7 +67,7 @@ function refreshOAuthToken(req, res, next) {
 
   if (refreshToken) {
     pendingTokenRefreshes[req.session.id] = request.post({
-      uri: 'https://partner.dev.onshape.com/oauth/token',
+      uri: platformPath + '/oauth/token',
       form: {
         'client_id': oauthClientId,
         'client_secret': oauthClientSecret,
@@ -90,7 +93,7 @@ function refreshOAuthToken(req, res, next) {
 }
 
 function getAuthUri() {
-  return 'https://partner.dev.onshape.com/oauth/authorize?response_type=code&client_id=' + oauthClientId;
+  return platformPath + '/oauth/authorize?response_type=code&client_id=' + oauthClientId;
 }
 
 module.exports = {
