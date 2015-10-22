@@ -106,6 +106,17 @@ function refreshContextElements() {
         });
       }
       theContext.elementId = $("#elt-select option:selected").val();
+
+      // If it's empty, then put up a message in the drop-list
+      if (objects.length == 0) {
+        $("#elt-select").append("<option value='" + 0 + "'" + " disabled>* No assemblies in this document *</option>");
+        var b = document.getElementById("element-generate");
+        b.disabled = true;
+      }
+      else {
+        var b = document.getElementById("element-generate");
+        b.disabled = false;
+      }
     }
   });
   return dfd.promise();
