@@ -5,18 +5,19 @@
 }
 
 body {
-  font-family: 'Flama';
+  font-family: 'Open Sans';
+  font-size: 12pt;
   padding: 10;
   margin: 10;
 }
 
 h2 {
-  font-family: 'Flama';
+  font-family: 'Open Sans';
 }
 table,
 th {
-  font-family: "Flama";
-  font-size: 11pt;
+  font-family: "Open Sans";
+  font-size: 12pt;
   color: #333333;
   border-bottom: 1px solid #9aa5af;
   line-height: 36px;
@@ -27,6 +28,10 @@ th,
 td {
   border-collapse: collapse;
 }
+button {
+  font-size: 12pt;
+}
+
 caption {
   font-size: 14pt;
   font-weight: 600;
@@ -49,62 +54,22 @@ caption {
 }
 
 div {
-  font-family: "Flama";
+  font-family: "Open Sans";
   margin : 10px;
 }
 
 select {
-  font-family: "Flama";
+  font-family: "Open Sans";
 }
 .infomessage {
   margin : 10px;
   margin-left : 50px;
   color : red;
-  font-family: 'Flama';
-  font-size : 10pt;
+  font-family: 'Open Sans';
+  font-size : 12pt;
   padding  : 40px;
 }
 
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 200;
-  src: url('/css/fonts/Flama-Thin.eot');
-  src: url('/css/fonts/Flama-Thin.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Thin.woff') format('woff'), url('/css/fonts/Flama-Thin.svg#font') format('svg');
+.bom-progress-bar {
+  margin:10%;
 }
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 300;
-  src: url('/css/fonts/Flama-Light.eot');
-  src: url('/css/fonts/Flama-Light.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Light.woff') format('woff'), url('/css/fonts/Flama-Light.svg#font') format('svg');
-}
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/css/fonts/Flama-Basic.eot');
-  src: url('/css/fonts/Flama-Basic.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Basic.woff') format('woff'), url('/css/fonts/Flama-Basic.svg#font') format('svg');
-}
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 500;
-  src: url('/css/fonts/Flama-Medium.eot');
-  src: url('/css/fonts/Flama-Medium.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Medium.woff') format('woff'), url('/css/fonts/Flama-Medium.svg#font') format('svg');
-}
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 600;
-  src: url('/css/fonts/Flama-Semibold.eot');
-  src: url('/css/fonts/Flama-Semibold.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Semibold.woff') format('woff'), url('/css/fonts/Flama-Semibold.svg#font') format('svg');
-}
-@font-face {
-  font-family: 'Flama';
-  font-style: normal;
-  font-weight: 700;
-  src: url('/css/fonts/Flama-Bold.eot');
-  src: url('/css/fonts/Flama-Bold.eot?#iefix') format('embedded-opentype'), url('/css/fonts/Flama-Bold.woff') format('woff'), url('/css/fonts/Flama-Bold.svg#font') format('svg');
-}
-
