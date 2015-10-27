@@ -16,6 +16,7 @@
     "express-session": "^1.11.3",
     "hbs": "^3.1.0",
     "morgan": "^1.5.3",
+    "newrelic": "^1.22.2",
     "passport": "^0.2.2",
     "passport-oauth2": "^1.1.2",
     "passport-onshape": "^1.0.0",
