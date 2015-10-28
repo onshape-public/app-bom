@@ -37,7 +37,7 @@ Execute the following commands to create a duplicate of a repository; you need t
     $ cd new-repository
     $ heroku create
 
-To regsister the new app, please send the following information to api-support@onshape.com (the output from Heroku should produce the domain name):
+To regsister the new app, go to the Dev Portal, https://dev-portal.dev.onshape.com. The output from Heroku should produce the domain name:
 
     Application name (ex: Onshape BOM Sample)
     Application description (one sentence; ex: "Onshape BOM Sample application — source code is available.")
