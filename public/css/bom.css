@@ -5,18 +5,14 @@
 }
 
 body {
-  font-family: 'Open Sans';
+  font-family: 'Roboto';
   font-size: 12pt;
   padding: 10;
   margin: 10;
 }
 
-h2 {
-  font-family: 'Open Sans';
-}
 table,
 th {
-  font-family: "Open Sans";
   font-size: 12pt;
   color: #333333;
   border-bottom: 1px solid #9aa5af;
@@ -54,18 +50,14 @@ caption {
 }
 
 div {
-  font-family: "Open Sans";
   margin : 10px;
 }
 
-select {
-  font-family: "Open Sans";
-}
 .infomessage {
   margin : 10px;
   margin-left : 50px;
   color : red;
-  font-family: 'Open Sans';
+  font-family: 'Roboto';
   font-size : 12pt;
   padding  : 40px;
 }
