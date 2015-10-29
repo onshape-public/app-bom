@@ -37,19 +37,18 @@ $(document).ready(function() {
   c.style.display = "none";
 });
 
-//
-// DATA that we need to hold onto for the selected assembly
-var AsmOccurences = [];
-var AsmInstances = [];
-var AsmParts = [];
-var AsmSubAssemblies = [];
+// Send message to Onshape
+function sendMessage(msgName) {
+  var msg = {};
+  msg['documentId'] = theContext.documentId;
+  msg['workspaceId'] = theContext.workspaceId;
+  msg['elementId'] =  theContext.elementId;
+  msg['messageName'] = msgName;
 
-var Parts = [];
-var SubAsmIds = [];
-
-//
-// Setup a timer to poll BOM server if an update was made to the model
-var IntervalId = window.setInterval( function(){
+  parent.postMessage(msg, '*');
+}
+function onShow() {
+  // Our tab is visible ... see if the model has changed
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
 
   $.ajax('/api/modelchange'+ params, {
@@ -64,9 +63,63 @@ var IntervalId = window.setInterval( function(){
       }
     },
     error: function(data) {
-     }
+    }
   });
-}, 10000 );
+}
+
+function onHide() {
+  // our tab is hidden
+  // take appropriate action
+}
+
+function handlePostMessage(e) {
+  if (e.data.messageName === 'show') {
+    onShow();
+  } else if (e.data.messageName === 'hide') {
+    onHide();
+  }
+};
+
+// keep Onshape alive if we have an active user
+var keepaliveCounter = 5 * 60 * 1000;   // 5 minutes
+var timeLastKeepaliveSent;
+// User activity detected. Send keepalive if we haven't recently
+function keepAlive() {
+  var now = new Date().getTime();
+  if (now > timeLastKeepaliveSent + keepaliveCounter) {
+    sendKeepalive();
+  }
+}
+
+// Send a keepalive message to Onshape
+function sendKeepalive() {
+  sendMessage('keepAlive');
+  timeLastKeepaliveSent = new Date().getTime();
+}
+
+// First message to Onshape tells the Onshape client we can accept messages
+function onDomLoaded() {
+  // listen for messages from Onshape client
+  window.addEventListener('message', handlePostMessage, false);
+  timeLastKeepaliveSent = 0;
+  document.onmousemove = keepAlive;
+  document.onkeypress = keepAlive;
+  sendKeepalive();
+  return false;
+}
+
+// When we are loaded, start the Onshape client messageing
+document.addEventListener("DOMContentLoaded", onDomLoaded);
+
+//
+// DATA that we need to hold onto for the selected assembly
+var AsmOccurences = [];
+var AsmInstances = [];
+var AsmParts = [];
+var AsmSubAssemblies = [];
+
+var Parts = [];
+var SubAsmIds = [];
 
 // update the list of elements in the context object
 function refreshContextElements() {
@@ -172,7 +225,6 @@ function onGenerate() {
 
   b = document.getElementById("element-generate");
   b.style.display = "none";
-
 
   // Clear any old data
   AsmOccurences = [];
@@ -484,7 +536,6 @@ function onGenerate3() {
 
     b = document.getElementById("element-generate");
     b.style.display = "initial";
-
   });
 }
 
