@@ -265,6 +265,27 @@ var getMetadata = function(req, res) {
   });
 };
 
+var getStudioMetadata = function(req, res) {
+  request.get({
+    uri:platformPath + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata',
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getMetadata(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting partstudio metadata: ', err);
+      });
+    } else {
+      console.log('GET /api/partstudios/metadata error: ', data);
+    }
+  });
+};
+
 var setWebhooks = function(req, res) {
   var eventList = [ "onshape.model.lifecycle.changed" ];
   var options = { collapseEvents : true };
@@ -337,6 +358,7 @@ router.get('/boundingBox', getBoundingBox);
 router.get('/definition', getAssemblyDefinition);
 router.get('/shadedView', getShadedView);
 router.get('/metadata', getMetadata);
+router.get('/studiometadata', getStudioMetadata);
 router.get('/webhooks', setWebhooks);
 router.get('/modelchange', checkModelChange);
 
