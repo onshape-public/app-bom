@@ -47,6 +47,7 @@ function sendMessage(msgName) {
 
   parent.postMessage(msg, '*');
 }
+
 function onShow() {
   // Our tab is visible ... see if the model has changed
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
@@ -112,7 +113,7 @@ function onDomLoaded() {
 document.addEventListener("DOMContentLoaded", onDomLoaded);
 
 //
-// DATA that we need to hold onto for the selected assembly
+// Global DATA that we need to hold onto for the selected assembly
 var AsmOccurences = [];
 var AsmInstances = [];
 var AsmParts = [];
@@ -121,7 +122,9 @@ var AsmSubAssemblies = [];
 var Parts = [];
 var SubAsmIds = [];
 
-// update the list of elements in the context object
+//
+// Update the list of elements in the context object
+//
 function refreshContextElements() {
   var dfd = $.Deferred();
   // Get all elements for the document ... only send D/W
@@ -273,29 +276,45 @@ function onGenerate() {
 
 //
 // Find the metadata for a given part ... Revision, Part Number
-function findMetadata(resolve, reject, index, elementId, partId) {
-  $.ajax('/api/metadata'+
-         "?documentId=" + theContext.documentId +
-         "&workspaceId=" + theContext.workspaceId +
-         "&elementId=" + elementId +
-         "&partId=" + partId, {
+function findStudioMetadata(resolve, reject, elementId) {
+  $.ajax('/api/studiometadata'+
+  "?documentId=" + theContext.documentId +
+  "&workspaceId=" + theContext.workspaceId +
+  "&elementId=" + elementId, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
-      var compData = data;
+      var metaParts = data;
 
-      Parts[index].name = compData.name;
-      Parts[index].partnumber = compData.partNumber;
-      if (Parts[index].partnumber == null)
-        Parts[index].partnumber = "";
-      Parts[index].revision = compData.revision;
-      if (Parts[index].revision == null)
-        Parts[index].revision = "";
+      for (var x = 0; x < metaParts.length; ++x) {
+        var partId = metaParts[x].partId;
 
+        // Find the parts these match up to in the parts list
+        for (var y = 0; y < Parts.length; ++y) {
+          if (Parts[y].isUsed == false || Parts[y].hasMeta == true)
+            continue;
+
+          // Match?
+          if (Parts[y].partId == partId && Parts[y].elementId == elementId) {
+            Parts[y].partnumber = metaParts[x].partNumber;
+            if (Parts[y].partnumber == null)
+              Parts[y].partnumber = "";
+            Parts[y].revision = metaParts[x].revision;
+            if (Parts[y].revision == null)
+              Parts[y].revision = "";
+            Parts[y].name = metaParts[x].name;
+            if (Parts[y].name == null)
+              Parts[y].name = "";
+            Parts[y].hasMeta = true;
+
+            break;
+          }
+        }
+      }
       resolve(1);
     },
     error: function() {
-      reject("Error finding metadata for part");
+      reject("Error finding metadata for partstudio");
     }
   });
 }
@@ -448,6 +467,7 @@ function onGenerate3() {
       "partnumber" : 0,
       "revision" : 0,
       "isUsed" : true,
+      "hasMeta" : false,
       "count" : 1
     };
   }
@@ -506,12 +526,29 @@ function onGenerate3() {
   }
 
 // Now that we have the list of components ... go get the Metadata for each one
-  var listPromises = [];
-
+  var partStudios = [];
   for (x = 0; x < Parts.length; ++x) {
     if (Parts[x].isUsed == false)
       continue;
-    listPromises.push(new Promise(function(resolve, reject) { findMetadata(resolve, reject, x, Parts[x].elementId, Parts[x].partId); }));
+
+    var needToAdd = true;
+    for (var y = 0; y < partStudios.length; ++y) {
+      if (partStudios[y] == Parts[x].elementId) {
+        needToAdd = false;
+        break;
+      }
+    }
+    // Not found ... add the elementId to the list
+    if (needToAdd == true) {
+      partStudios[partStudios.length] = Parts[x].elementId;
+    }
+  }
+
+  var listPromises = [];
+
+  // Find the Metadata through the PartStudios so that it is faster to fetch via the API
+  for (x = 0; x < partStudios.length; ++x) {
+    listPromises.push(new Promise(function(resolve, reject) { findStudioMetadata(resolve, reject, partStudios[x]); }));
   }
 
   return Promise.all(listPromises).then(function() {
