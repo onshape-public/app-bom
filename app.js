@@ -1,3 +1,4 @@
+var relic = require('newrelic');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -10,7 +11,7 @@ var RedisStore = require('connect-redis')(session);
 var passport = require('passport');
 var http = require('http');
 var uuid = require('uuid');
-var relic = require('newrelic');
+
 
 var api = require('./routes/api');
 var index = require('./routes/index');
