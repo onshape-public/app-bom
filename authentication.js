@@ -29,7 +29,7 @@ function init() {
       callbackURL: hostedPath + "/oauthRedirect",
       authorizationURL: platformPath + "/oauth/authorize",
       tokenURL: platformPath + "/oauth/token",
-      userProfileURL: platformPath + "/api/users/current"
+      userProfileURL: platformPath + "/api/users/session"
     },
     function(accessToken, refreshToken, profile, done) {
       // asynchronous verification, for effect...
