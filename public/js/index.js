@@ -145,7 +145,7 @@ function refreshContextElements() {
             .append(
                     "<option value='" + objects[i].id + "'" +
                     (i == 0 ? " selected" : "") + ">" +
-                    _.escape(objects[i].name) + "</option>"
+                    _.escape(objects[i].name) +  "</option>"
                    )
             .change(function () {
               id = $("#elt-select option:selected").val();
@@ -172,6 +172,21 @@ function refreshContextElements() {
       else {
         var b = document.getElementById("element-generate");
         b.disabled = false;
+      }
+    },
+    error: function(data) {
+      $("#elt-select").append("<option value='" + 0 + "'" + " disabled>* Could not access assemblies list in this document *</option>");
+      var b = document.getElementById("element-generate");
+      b.disabled = true;
+
+      document.cookie = "TemporaryTestCookie=yes;";
+      if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
+        $("#alert_template button").after('<span>Cookies for 3rd Party Sites need to be enabled for this app to run</span>');
+        $('#alert_template').fadeIn('slow');
+        $('#alert_template .close').click(function(e) {
+          $("#alert_template span").remove();
+          $("#alert_template").remove();
+        });
       }
     }
   });
@@ -228,6 +243,32 @@ function onGenerate() {
 
   b = document.getElementById("element-generate");
   b.style.display = "none";
+
+  // Display the wait cursor
+  var opts = {
+    lines: 13 // The number of lines to draw
+    , length: 8 // The length of each line
+    , width: 4 // The line thickness
+    , radius: 10 // The radius of the inner circle
+    , scale: 0.01 // Scales overall size of the spinner
+    , corners: 0.1 // Corner roundness (0..1)
+    , color: '#000' // #rgb or #rrggbb or array of colors
+    , opacity: 0.25 // Opacity of the lines
+    , rotate: 0 // The rotation offset
+    , direction: 1 // 1: clockwise, -1: counterclockwise
+    , speed: 1 // Rounds per second
+    , trail: 60 // Afterglow percentage
+    , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+    , zIndex: 2e9 // The z-index (defaults to 2000000000)
+    , className: 'spinner' // The CSS class to assign to the spinner
+    , top: '45%' // Top position relative to parent
+    , left: '50%' // Left position relative to parent
+    , shadow: false // Whether to render a shadow
+    , hwaccel: false // Whether to use hardware acceleration
+    , position: 'relative' // Element positioning
+  }
+  var target = document.getElementById('bom-status-bar')
+//  var spinner = new Spinner(opts).spin(target);
 
   // Clear any old data
   AsmOccurences = [];
@@ -573,6 +614,13 @@ function onGenerate3() {
 
     b = document.getElementById("element-generate");
     b.style.display = "initial";
+
+//    var theContainer = $('#spinner-area');
+//    theContainer.empty();
+
+    b = document.getElementById("bom-status-bar");
+    b.style.display = "none";
+
   });
 }
 

@@ -63,5 +63,6 @@ div {
 }
 
 .bom-progress-bar {
-  margin:10%;
+  position: absolute;
+  z-index: -5;
 }

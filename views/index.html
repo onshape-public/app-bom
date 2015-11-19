@@ -14,8 +14,10 @@
   <script src="js/jquery.min.js"></script>
   <script src="jquery-plugin-query-parser-master/jquery-queryParser.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
+  <script src="js/spin.js"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/index.js"></script>
+
    <body>
     <div id="context-table">
        <b>Bill of Materials:</b>
@@ -31,10 +33,11 @@
             <p><i>* Model has been changed. BOM may not be up to date. *</i></p>
        </div>
     </div>
-    <div id="spinner-area" />
+    <div class="bom-progress-bar" id="bom-status-bar style="display: none;"/>
+    <div id="bomResults" />
 
-    <div id="bomResults">
+    <div class="alert alert-info" id="alert_template" style="display: none;">
+        <button type="button" class="close">×</button>
     </div>
-
-  </body>
+   </body>
 </html>
