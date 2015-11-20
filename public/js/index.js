@@ -21,7 +21,7 @@ $(document).ready(function() {
   theContext.documentId = theQuery.documentId;
   theContext.workspaceId = theQuery.workspaceId;
   theContext.elementId = theQuery.elementId;
-  refreshContextElements();
+  refreshContextElements(0);
 
   // Hide the UI elements we don't need right now
   var e = document.getElementById("type-select");
@@ -48,9 +48,10 @@ function sendMessage(msgName) {
   parent.postMessage(msg, '*');
 }
 
-function onShow() {
-  // Our tab is visible ... see if the model has changed
-  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
+//
+// Check to see if a model has changed
+function checkForChange(resolve, reject, elementId) {
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + elementId;
 
   $.ajax('/api/modelchange'+ params, {
     dataType: 'json',
@@ -61,13 +62,32 @@ function onShow() {
         // Show the message to say the BOM may be invalid
         var e = document.getElementById("element-model-change-message");
         e.style.display = "initial";
-
-        // Update the assembly list ... it may have changed.
-        refreshContextElements();
       }
+      resolve(1);
     },
     error: function(data) {
+      reject(0);
     }
+  });
+}
+
+//
+// Tab is now shown
+function onShow() {
+  var listPromises = [];
+  var selectedIndex = 0;
+
+  // Check to see if any of the assemblies have changed, if so, let the user know
+  $('#elt-select option').each(function(index,element){
+    listPromises.push(new Promise(function(resolve, reject) { checkForChange(resolve, reject, element.value); }));
+
+    if (element.value == theContext.elementId)
+      selectedIndex = index;
+  });
+
+  return Promise.all(listPromises).then(function() {
+    // Update the assembly list ... it may have changed.
+    refreshContextElements(selectedIndex);
   });
 }
 
@@ -128,7 +148,7 @@ var SubAsmIds = [];
 //
 // Update the list of elements in the context object
 //
-function refreshContextElements() {
+function refreshContextElements(selectedIndexIn) {
   var dfd = $.Deferred();
   // Get all elements for the document ... only send D/W
   var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId;
@@ -147,7 +167,7 @@ function refreshContextElements() {
         $("#elt-select")
             .append(
                     "<option value='" + objects[i].id + "'" +
-                    (i == 0 ? " selected" : "") + ">" +
+                    (i == selectedIndexIn ? " selected" : "") + ">" +
                     _.escape(objects[i].name) +  "</option>"
                    )
             .change(function () {
