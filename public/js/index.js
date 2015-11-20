@@ -61,6 +61,9 @@ function onShow() {
         // Show the message to say the BOM may be invalid
         var e = document.getElementById("element-model-change-message");
         e.style.display = "initial";
+
+        // Update the assembly list ... it may have changed.
+        refreshContextElements();
       }
     },
     error: function(data) {
@@ -150,7 +153,19 @@ function refreshContextElements() {
             .change(function () {
               id = $("#elt-select option:selected").val();
               theContext.elementId = id;
-              });
+
+              // Restore the UI back to initial create
+              var b = document.getElementById("element-save-csv");
+              b.style.display = "none";
+              var p = document.getElementById("element-print");
+              p.style.display = "none";
+
+              b = document.getElementById("element-generate");
+              b.style.display = "initial";
+              b.firstChild.data = "Create";
+
+              $('#bomResults').empty();
+            });
 
         // Setup the webhook for model changes
         var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + objects[i].id;
@@ -387,51 +402,50 @@ function onGenerate2() {
         imageString = "<img alt='An image' src='http://i.imgur.com/lEyLDtn.jpg' width=550 height=244 />";
         ResultImage.append(imageString);
       }
+
+      // Create block dom
+      this.block = $('<div class="block" position="relative"></div>');
+      this.block.attr("bom", "bom")
+      this.block.append(ResultImage);
+      ResultTable = $('<table class="table-striped" valign="center"></table>');
+      ResultTable.addClass('resultTable');
+      this.block.append(ResultTable);
+
+      // Get the name of the assembly we are generating the BOM for
+      var e = document.getElementById("elt-select");
+      var asmName = e.options[e.selectedIndex].text;
+      ResultTable.append("<caption>"+ asmName + "</caption>");
+      ResultTable.append("<th align='center'>Item number</th>");
+
+      ResultTable.append("<th align='left'>Component name</th>");
+      ResultTable.append("<th align='center'>Count</th>");
+      ResultTable.append("<th align='center'>Part number</th>");
+      ResultTable.append("<th align='center'>Revision</th>");
+
+      $('#bomResults').append(this.block);
+
+      // Get the contents of the assembly
+      var getPromise = new Promise(findDefinition);
+
+      // Find all assemblies in the model
+      return getPromise.then(function() {
+
+        // If there is nothing to do (assembly is empty) then just bail out
+        if (AsmInstances.length == 0) {
+          var b = document.getElementById("element-generate");
+          b.style.display = "initial";
+
+          return;
+        }
+
+        // Match up revision/part number and total counts here
+        onGenerate3();
+      });
     },
     error: function() {
 
     }
   });
-
-// Create block dom
-  this.block = $('<div class="block" position="relative"></div>');
-  this.block.attr("bom", "bom")
-  this.block.append(ResultImage);
-  ResultTable = $('<table class="table-striped" valign="center"></table>');
-  ResultTable.addClass('resultTable');
-  this.block.append(ResultTable);
-
-  // Get the name of the assembly we are generating the BOM for
-  var e = document.getElementById("elt-select");
-  var asmName = e.options[e.selectedIndex].text;
-  ResultTable.append("<caption>"+ asmName + "</caption>");
-  ResultTable.append("<th align='center'>Item number</th>");
-
-  ResultTable.append("<th align='left'>Component name</th>");
-  ResultTable.append("<th align='center'>Count</th>");
-  ResultTable.append("<th align='center'>Part number</th>");
-  ResultTable.append("<th align='center'>Revision</th>");
-
-  $('#bomResults').append(this.block);
-
-  // Get the contents of the assembly
-  var getPromise = new Promise(findDefinition);
-
-  // Find all assemblies in the model
-  return getPromise.then(function() {
-
-    // If there is nothing to do (assembly is empty) then just bail out
-    if (AsmInstances.length == 0) {
-      var b = document.getElementById("element-generate");
-      b.style.display = "initial";
-
-      return;
-    }
-
-    // Match up revision/part number and total counts here
-    onGenerate3();
-  });
-
 }
 
 //
@@ -614,12 +628,13 @@ function onGenerate3() {
 
     b = document.getElementById("element-generate");
     b.style.display = "initial";
+    b.firstChild.data = "Update";
 
 //    var theContainer = $('#spinner-area');
 //    theContainer.empty();
 
-    b = document.getElementById("bom-status-bar");
-    b.style.display = "none";
+//    b = document.getElementById("bom-status-bar");
+//    b.style.display = "none";
 
   });
 }
