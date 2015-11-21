@@ -289,7 +289,7 @@ var getStudioMetadata = function(req, res) {
 var setWebhooks = function(req, res) {
   var eventList = [ "onshape.model.lifecycle.changed" ];
   var options = { collapseEvents : true };
-  var urlNotify = "https://onshape-appstore-bom.herokuapp.com/notify";
+  var urlNotify = "https://onshape-app-bom.herokuapp.com/notify";
   var filter = "{$DocumentId} = '" + req.query.documentId + "' && " +
                "{$WorkspaceId} = '" + req.query.workspaceId + "' && " +
                "{$ElementId} = '" + req.query.elementId + "'";
