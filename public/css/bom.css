@@ -4,7 +4,8 @@
   }
 }
 
-body {
+body,
+pre {
   font-family: 'Roboto';
   font-size: 12pt;
   padding: 10;
