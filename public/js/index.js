@@ -135,6 +135,36 @@ function onDomLoaded() {
 // When we are loaded, start the Onshape client messageing
 document.addEventListener("DOMContentLoaded", onDomLoaded);
 
+var Subscribed = true;
+
+//
+// Check to see if the user is subscribed to this application
+function checkSubscription() {
+  // Make sure the user is subscribed
+  return new Promise(function(resolve, reject) {
+    $.ajax('/api/accounts', {
+      dataType: 'json',
+      type: 'GET',
+      success: function(data) {
+        var object = data;
+
+        Subscribed = object.Subscribed;
+
+        // If there is no active subscription, then block the Create button.
+        if (Subscribed == false) {
+          displayAlert('No active subscription for this application. Check the Onshape App Store.');
+          var b = document.getElementById("element-generate");
+          b.disabled = true;
+
+          reject(0);
+        }
+        else
+          resolve(1);
+      }
+    });
+  });
+}
+
 //
 // Global DATA that we need to hold onto for the selected assembly
 var AsmOccurences = [];
@@ -208,6 +238,8 @@ function refreshContextElements(selectedIndexIn) {
         var b = document.getElementById("element-generate");
         b.disabled = false;
       }
+
+      checkSubscription();
     },
     error: function(data) {
       $("#elt-select").append("<option value='" + 0 + "'" + " disabled>* Could not access assemblies list in this document *</option>");
@@ -216,7 +248,8 @@ function refreshContextElements(selectedIndexIn) {
 
       document.cookie = "TemporaryTestCookie=yes;";
       if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
-        $("#alert_template button").after('<span>Cookies for 3rd Party Sites need to be enabled for this app to run</span>');
+        $("#alert_template span").remove();
+        $("#alert_template button").after('<span><pre><h5>Cookies for third party sites need to be enabled for this app to run</h5><br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.</pre></span>');
         $('#alert_template').fadeIn('slow');
         $('#alert_template .close').click(function(e) {
           $("#alert_template span").remove();
@@ -262,91 +295,96 @@ var tY = 0;
 var tZ = 0;
 
 function onGenerate() {
-  // Destroy anything previously created ...
-  $('#bomResults').empty();
+  // Make sure the application is subscribed
+  var checkPromise = checkSubscription();
 
-  theContext.elementId = $("#elt-select option:selected").val();
+  return checkPromise.then(function() {
+    // Destroy anything previously created ...
+    $('#bomResults').empty();
 
-  var b = document.getElementById("element-save-csv");
-  b.style.display = "none";
+    theContext.elementId = $("#elt-select option:selected").val();
 
-  b = document.getElementById("element-print");
-  b.style.display = "none";
+    var b = document.getElementById("element-save-csv");
+    b.style.display = "none";
 
-  b = document.getElementById("element-model-change-message");
-  b.style.display = "none";
+    b = document.getElementById("element-print");
+    b.style.display = "none";
 
-  b = document.getElementById("element-generate");
-  b.style.display = "none";
+    b = document.getElementById("element-model-change-message");
+    b.style.display = "none";
 
-  // Display the wait cursor
-  var opts = {
-    lines: 13 // The number of lines to draw
-    , length: 8 // The length of each line
-    , width: 4 // The line thickness
-    , radius: 10 // The radius of the inner circle
-    , scale: 0.01 // Scales overall size of the spinner
-    , corners: 0.1 // Corner roundness (0..1)
-    , color: '#000' // #rgb or #rrggbb or array of colors
-    , opacity: 0.25 // Opacity of the lines
-    , rotate: 0 // The rotation offset
-    , direction: 1 // 1: clockwise, -1: counterclockwise
-    , speed: 1 // Rounds per second
-    , trail: 60 // Afterglow percentage
-    , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
-    , zIndex: 2e9 // The z-index (defaults to 2000000000)
-    , className: 'spinner' // The CSS class to assign to the spinner
-    , top: '45%' // Top position relative to parent
-    , left: '50%' // Left position relative to parent
-    , shadow: false // Whether to render a shadow
-    , hwaccel: false // Whether to use hardware acceleration
-    , position: 'relative' // Element positioning
-  }
-  var target = document.getElementById('bom-status-bar')
+    b = document.getElementById("element-generate");
+    b.style.display = "none";
+
+    // Display the wait cursor
+    var opts = {
+      lines: 13 // The number of lines to draw
+      , length: 8 // The length of each line
+      , width: 4 // The line thickness
+      , radius: 10 // The radius of the inner circle
+      , scale: 0.01 // Scales overall size of the spinner
+      , corners: 0.1 // Corner roundness (0..1)
+      , color: '#000' // #rgb or #rrggbb or array of colors
+      , opacity: 0.25 // Opacity of the lines
+      , rotate: 0 // The rotation offset
+      , direction: 1 // 1: clockwise, -1: counterclockwise
+      , speed: 1 // Rounds per second
+      , trail: 60 // Afterglow percentage
+      , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+      , zIndex: 2e9 // The z-index (defaults to 2000000000)
+      , className: 'spinner' // The CSS class to assign to the spinner
+      , top: '45%' // Top position relative to parent
+      , left: '50%' // Left position relative to parent
+      , shadow: false // Whether to render a shadow
+      , hwaccel: false // Whether to use hardware acceleration
+      , position: 'relative' // Element positioning
+    }
+    var target = document.getElementById('bom-status-bar')
 //  var spinner = new Spinner(opts).spin(target);
 
-  // Clear any old data
-  AsmOccurences = [];
-  AsmInstances = [];
-  AsmParts = [];
-  AsmSubAssemblies = [];
+    // Clear any old data
+    AsmOccurences = [];
+    AsmInstances = [];
+    AsmParts = [];
+    AsmSubAssemblies = [];
 
-  Parts = [];
+    Parts = [];
 
 
-  // Get the bounding box size so we can position the thumbnail properly
-  $.ajax('/api/boundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + theContext.elementId, {
-    dataType: 'json',
-    type: 'GET',
-    success: function(data) {
-      var res = data;
-      var xLow = res.lowX;
-      var xHigh = res.highX;
-      var yLow = res.lowY;
-      var yHigh = res.highY;
-      var zLow = res.lowZ;
-      var zHigh = res.highZ;
+    // Get the bounding box size so we can position the thumbnail properly
+    $.ajax('/api/boundingBox' + '?documentId=' + theContext.documentId + '&workspaceId=' + theContext.workspaceId + '&elementId=' + theContext.elementId, {
+      dataType: 'json',
+      type: 'GET',
+      success: function(data) {
+        var res = data;
+        var xLow = res.lowX;
+        var xHigh = res.highX;
+        var yLow = res.lowY;
+        var yHigh = res.highY;
+        var zLow = res.lowZ;
+        var zHigh = res.highZ;
 
-      // Get the size of the BBox
-      var xDiff = xHigh - xLow;
-      var yDiff = yHigh - yLow;
-      var zDiff = zHigh - zLow;
-      realSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
+        // Get the size of the BBox
+        var xDiff = xHigh - xLow;
+        var yDiff = yHigh - yLow;
+        var zDiff = zHigh - zLow;
+        realSize = Math.sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff);
 
-      // Find the center of the BBox - model coordinates
-      var xCenter = (xHigh + xLow) / 2;
-      var yCenter = (yHigh + yLow) / 2;
-      var zCenter = (zHigh + zLow) / 2;
+        // Find the center of the BBox - model coordinates
+        var xCenter = (xHigh + xLow) / 2;
+        var yCenter = (yHigh + yLow) / 2;
+        var zCenter = (zHigh + zLow) / 2;
 
-      tX = (xCenter * 0.707 + yCenter * 0.707 + zCenter * 0);
-      tY = (xCenter * -0.409 + yCenter * 0.409 + zCenter * 0.816);
-      tZ = (xCenter * 0.577 + yCenter * -0.577 + zCenter * 0.577);
+        tX = (xCenter * 0.707 + yCenter * 0.707 + zCenter * 0);
+        tY = (xCenter * -0.409 + yCenter * 0.409 + zCenter * 0.816);
+        tZ = (xCenter * 0.577 + yCenter * -0.577 + zCenter * 0.577);
 
-      // Now, finish the rest of the work.
-      onGenerate2();
-    },
-    error: function(data) {
-    }
+        // Now, finish the rest of the work.
+        onGenerate2();
+      },
+      error: function(data) {
+      }
+    });
   });
 }
 

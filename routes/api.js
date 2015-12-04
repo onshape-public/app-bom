@@ -349,6 +349,44 @@ var checkModelChange = function(req, res) {
   });
 }
 
+var getAccounts = function(req, res) {
+  var url = process.env.ONSHAPE_PLATFORM + '/api/accounts/purchases';
+
+  request.get({
+    uri: url,
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    var object = JSON.parse(data);
+
+    // Walk through the various apps that the user has purchased looking for this one.
+    var isSubscribed = false;
+    for (var i = 0; i < object.length; ++i) {
+      if (object[i].clientId == process.env.OAUTH_CLIENT_ID)
+        isSubscribed = true;
+    }
+
+    var returnData = {
+      Subscribed : isSubscribed,
+      Items : object
+    };
+
+    res.send(returnData);
+  }).catch(function(data) {
+    console.log('****** getAccounts - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting accounts: ', err);
+      });
+    } else {
+      console.log('GET /api/accounts/purchases error: ', data);
+    }
+  });
+};
+
 router.get('/documents', getDocuments);
 router.get('/session', getSession);
 router.get('/elements', getElementList);
@@ -361,5 +399,6 @@ router.get('/metadata', getMetadata);
 router.get('/studiometadata', getStudioMetadata);
 router.get('/webhooks', setWebhooks);
 router.get('/modelchange', checkModelChange);
+router.get('/accounts', getAccounts);
 
 module.exports = router;
