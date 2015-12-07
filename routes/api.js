@@ -266,6 +266,9 @@ var getMetadata = function(req, res) {
 };
 
 var getStudioMetadata = function(req, res) {
+  var url = '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata';
+  if (req.query.versionId > 0)
+    url = '/api/partstudios/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/metadata'
   request.get({
     uri:platformPath + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata',
     headers: {
@@ -411,6 +414,30 @@ var getWorkspace = function(req, res) {
   });
 };
 
+var getVersions = function(req, res) {
+  var url = process.env.ONSHAPE_PLATFORM + '/api/documents/d/' + req.query.documentId + '/versions';
+
+  request.get({
+    uri: url,
+    headers: {
+      'Authorization': 'Bearer ' + req.user.accessToken
+    }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    console.log('****** getVersions - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting versions: ', err);
+      });
+    } else {
+      console.log('GET /api/documents/versions error: ', data);
+    }
+  });
+};
+
 router.get('/documents', getDocuments);
 router.get('/session', getSession);
 router.get('/elements', getElementList);
@@ -425,5 +452,6 @@ router.get('/webhooks', setWebhooks);
 router.get('/modelchange', checkModelChange);
 router.get('/accounts', getAccounts);
 router.get('/workspace', getWorkspace);
+router.get('/versions', getVersions);
 
 module.exports = router;
