@@ -267,8 +267,8 @@ var getMetadata = function(req, res) {
 
 var getStudioMetadata = function(req, res) {
   var url = '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata';
-  if (req.query.versionId > 0)
-    url = '/api/partstudios/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/metadata'
+  if (req.query.microversionId > 0)
+    url = '/api/partstudios/d/' + req.query.documentId + '/m/' + req.query.microversionId + '/e/' + req.query.elementId + '/metadata'
   request.get({
     uri:platformPath + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata',
     headers: {

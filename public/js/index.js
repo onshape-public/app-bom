@@ -443,7 +443,7 @@ function findStudioMetadata(resolve, reject, elementId) {
   "?documentId=" + theContext.documentId +
   "&workspaceId=" + theContext.workspaceId +
   "&elementId=" + elementId +
-  "&versionId=" + theContext.version, {
+  "&microversionId=" + theContext.microversion, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
