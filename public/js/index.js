@@ -249,7 +249,7 @@ function refreshContextElements(selectedIndexIn) {
       document.cookie = "TemporaryTestCookie=yes;";
       if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
         $("#alert_template span").remove();
-        $("#alert_template button").after('<span><pre><h5>Cookies for third party sites need to be enabled for this app to run</h5><br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.</pre></span>');
+        $("#alert_template button").after('<span><pre><h4>Cookies for third party sites need to be enabled for this app to run</h4><br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.</pre></span>');
         $('#alert_template').fadeIn('slow');
         $('#alert_template .close').click(function(e) {
           $("#alert_template span").remove();
