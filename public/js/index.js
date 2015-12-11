@@ -27,17 +27,7 @@ $(document).ready(function() {
   refreshContextElements(0);
 
   // Hide the UI elements we don't need right now
-  var e = document.getElementById("type-select");
-  e.style.display = "none";
-
-  var b = document.getElementById("element-save-csv");
-  b.style.display = "none";
-
-  var p = document.getElementById("element-print");
-  p.style.display = "none";
-
-  var c = document.getElementById("element-model-change-message");
-  c.style.display = "none";
+  uiDisplay('off', 'on');
 });
 
 // Send message to Onshape
@@ -255,12 +245,9 @@ function refreshContextElements(selectedIndexIn) {
                       theContext.elementId = id;
 
                       // Restore the UI back to initial create
-                      var b = document.getElementById("element-save-csv");
-                      b.style.display = "none";
-                      var p = document.getElementById("element-print");
-                      p.style.display = "none";
+                      uiDisplay('off', 'on');
 
-                      b = document.getElementById("element-generate");
+                      var b = document.getElementById("element-generate");
                       b.style.display = "initial";
                       b.firstChild.data = "Create";
 
@@ -333,6 +320,30 @@ function findDefinition(resolve, reject) {
   });
 }
 
+//
+// Turn bits of the UI on/off
+function uiDisplay(state, save) {
+  var e = document.getElementById("type-select");
+  e.style.display = "none";
+
+  var sType = (save == 'on') ? 'initial' : 'none';
+  var b = document.getElementById("element-generate");
+  b.style.display = sType;
+
+  var dType = (state == 'off') ? 'none' : 'initial';
+
+  b = document.getElementById("element-save-csv");
+  b.style.display = dType;
+
+  b = document.getElementById("element-print");
+  b.style.display = dType;
+
+  b = document.getElementById("element-model-change-message");
+  b.style.display = 'none';
+
+  $("#options_panel").css("visibility", (save == 'off') ? "hidden" : "visible");
+}
+
 /////////////////////////////////////
 //
 // Primary BOM generation function
@@ -352,17 +363,7 @@ function onGenerate() {
 
     theContext.elementId = $("#elt-select option:selected").val();
 
-    var b = document.getElementById("element-save-csv");
-    b.style.display = "none";
-
-    b = document.getElementById("element-print");
-    b.style.display = "none";
-
-    b = document.getElementById("element-model-change-message");
-    b.style.display = "none";
-
-    b = document.getElementById("element-generate");
-    b.style.display = "none";
+    uiDisplay('off', 'off');
 
     // Display the wait cursor
     var opts = {
@@ -490,8 +491,11 @@ function onGenerate2() {
   ResultImage = $('<div style="float:right"></div>');
   ResultImage.addClass('ResultImage');
 
+  var b = document.getElementById('bom-image-size');
+  var outputSize = (b.checked == true) ? 300 : 600;
+
   var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId +
-          "&outputHeight=600&outputWidth=600&pixelSize=" + realSize / 600 +
+      "&outputHeight=" + outputSize + "&outputWidth=" + outputSize + "&pixelSize=" + realSize / outputSize +
       "&viewMatrix1=" + 0.707 + "&viewMatrix2=" + 0.707 + "&viewMatrix3=" + 0 + "&viewMatrix4=" + (-tX) +
       "&viewMatrix5=" + (-0.409) + "&viewMatrix6=" + 0.409 + "&viewMatrix7=" + 0.816 + "&viewMatrix8=" + (-tY) +
       "&viewMatrix9=" + 0.577 + "&viewMatrix10=" + (-0.577) + "&viewMatrix11=" + 0.577 + "&viewMatrix12=" + (-tZ);
@@ -674,7 +678,7 @@ function onGenerate3() {
 
     // Check against all other parts to see if this part is already in the list (check vs. PartId)
     if (Parts[x].isUsed == true) {
-       for (var y = x + 1; y < Parts.length; ++y) {
+      for (var y = x + 1; y < Parts.length; ++y) {
         if (Parts[y].isUsed == false)
           continue;
 
@@ -714,6 +718,36 @@ function onGenerate3() {
   }
 
   return Promise.all(listPromises).then(function() {
+    // If we are collating by component name, run through the parts again looking for instances
+    var b = document.getElementById('bom-component-collapse');
+    if (b.checked == true) {
+      for (var x = 0; x < Parts.length; ++x) {
+        // Skip collated parts
+        if (Parts[x].isUsed == false) {
+          continue;
+        }
+
+        // Check against all other parts to see if this part is already in the list (check vs. PartId)
+        for (var y = x + 1; y < Parts.length; ++y) {
+          if (Parts[y].isUsed == false)
+            continue;
+
+          // See if this is the same part ... if so, bump the count
+          // This is a different check ... it just compares the components by name
+          if (Parts[y].name == Parts[x].name) {
+              Parts[x].count+= Parts[y].count;
+              Parts[y].isUsed = false;
+
+              // Copy over the part number and revision if the 'base' part does not have that info ... API may not have access to the shared properties
+              if (Parts[x].partnumber == '')
+                Parts[x].partnumber = Parts[y].partnumber;
+              if (Parts[x].revision == '')
+                Parts[x].revision = Parts[y].revision;
+            }
+        }
+      }
+    }
+
     // Ready to generate BOM
     var currentItemNumber = 0;
     var currentSubItemNumber = 0;
@@ -722,19 +756,15 @@ function onGenerate3() {
         continue;
 
       ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Parts[i].name + "</td>" +
-          "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
-          "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
-          currentSubItemNumber++;
+      "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
+      "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
+      currentSubItemNumber++;
     }
 
     // We can now save this off in other formats (like CSV)
-    var b = document.getElementById("element-save-csv");
-    b.style.display = "initial";
-    var p = document.getElementById("element-print");
-    p.style.display = "initial";
+    uiDisplay('on', 'on');
 
-    b = document.getElementById("element-generate");
-    b.style.display = "initial";
+    var b = document.getElementById("element-generate");
     b.firstChild.data = "Update";
 
 //    var theContainer = $('#spinner-area');
@@ -758,10 +788,10 @@ function onSave() {
     if (Parts[i].isUsed == true) {
 
       myCsv += (currentItemNumber + 1) + "," +
-        Parts[i].name + "," +
-        Parts[i].count + "," +
-        Parts[i].partnumber + "," +
-        Parts[i].revision + "\n";
+      Parts[i].name + "," +
+      Parts[i].count + "," +
+      Parts[i].partnumber + "," +
+      Parts[i].revision + "\n";
       currentItemNumber++;
     }
   }
@@ -789,31 +819,11 @@ function onSave() {
 function onPrint() {
 
   // Hide the UI ...
-  var b = document.getElementById("element-save-csv");
-  b.style.display = "none";
+  uiDisplay('off', 'off');
 
-  b = document.getElementById("element-print");
-  b.style.display = "none";
-
-  b = document.getElementById("element-generate");
-  b.style.display = "none";
-
-  b = document.getElementById("elt-select");
-  b.style.display = "none";
-
-   window.print();
+  window.print();
 
   // Put the UI back ...
-  b = document.getElementById("element-save-csv");
-  b.style.display = "initial";
-
-  b = document.getElementById("element-print");
-  b.style.display = "initial";
-
-  b = document.getElementById("element-generate");
-  b.style.display = "initial";
-
-  b = document.getElementById("elt-select");
-  b.style.display = "initial";
+  uiDisplay('on', 'on');
 }
 
