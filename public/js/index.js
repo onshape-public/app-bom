@@ -662,6 +662,11 @@ function onGenerate3() {
           Parts[j].elementId = AsmInstances[i].elementId;
           Parts[j].partId = AsmInstances[i].partId;
           Parts[j].microversionId = AsmInstances[i].documentMicroversion;
+
+          // If it's suppressed, then mark it as not used in the BOM
+          if (AsmInstances[i].suppressed == true) {
+            Parts[j].isUsed = false;
+          }
         }
       }
     }
