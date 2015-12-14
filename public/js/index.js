@@ -292,6 +292,17 @@ function refreshContextElements(selectedIndexIn) {
           return dfd.promise();
         }
       });
+    },
+    error: function(data) {
+      $("#elt-select").append("<option value='" + 0 + "'" + " disabled>* Could not access assemblies list in this document *</option>");
+      var b = document.getElementById("element-generate");
+      b.disabled = true;
+
+      document.cookie = "TemporaryTestCookie=yes;";
+      if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
+        console.log("Third party cookie issue ...");
+        displayAlert('Cookies for third party sites need to be enabled for this app to run<br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.');
+      }
     }
   });
 }
