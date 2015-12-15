@@ -285,7 +285,7 @@ function refreshContextElements(selectedIndexIn) {
 
               document.cookie = "TemporaryTestCookie=yes;";
               if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
-                displayAlert('<pre><h4>Cookies for third party sites need to be enabled for this app to run</h4><br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.</pre>');
+                displayAlert('<pre><h4>Cookies for third party sites need to be enabled for this app to run</h4><br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the BOM Sample will work properly.</pre>');
               }
             }
           });
@@ -301,7 +301,7 @@ function refreshContextElements(selectedIndexIn) {
       document.cookie = "TemporaryTestCookie=yes;";
       if(document.cookie.indexOf("TemporaryTestCookie=") == -1) {
         console.log("Third party cookie issue ...");
-        displayAlert('Cookies for third party sites need to be enabled for this app to run<br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the Explode Sample will work properly.');
+        displayAlert('Cookies for third party sites need to be enabled for this app to run<br>    If you are using Safari, use <b>Preferences</b> -> <b>Privacy</b> then click on <b>Always allow</b><br>    Refresh this page and the BOM Sample will work properly.');
       }
     }
   });
