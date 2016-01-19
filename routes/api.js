@@ -56,7 +56,7 @@ router.post('/logout', function(req, res) {
 
 var getSession = function(req, res) {
   request.get({
-    uri: platformPath + '/api/users/session',
+    uri: platformPath + '/api/users/sessioninfo',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
