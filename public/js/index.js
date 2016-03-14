@@ -688,8 +688,8 @@ function onGenerate3() {
           Parts[j].partId = AsmInstances[i].partId;
           Parts[j].microversionId = AsmInstances[i].documentMicroversion;
           if (AsmInstances[i].documentId !== theContext.documentId)
-            Parts[j].documentId = AsmInstances[i].externalDocumentId;
-            Parts[j].documentId = AsmInstances[i].externalDocumentVersion;
+            Parts[j].externalDocumentId = AsmInstances[i].externalDocumentId;
+            Parts[j].externalDocumentVersion = AsmInstances[i].externalDocumentVersion;
 
           // If it's suppressed, then mark it as not used in the BOM
           if (AsmInstances[i].suppressed == true) {
