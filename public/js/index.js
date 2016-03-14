@@ -670,9 +670,10 @@ function onGenerate3() {
             Parts[f].elementId = AsmSubAssemblies[d].instances[e].elementId;
             Parts[f].partId = AsmSubAssemblies[d].instances[e].partId;
             Parts[f].microversionId = AsmSubAssemblies[d].instances[e].documentMicroversion;
-            if (AsmSubAssemblies[d].instances[e].documentId !== theContext.documentId)
+            if (AsmSubAssemblies[d].instances[e].documentId !== theContext.documentId) {
               Parts[f].externalDocumentId = AsmSubAssemblies[d].instances[e].documentId;
               Parts[f].externalDocumentVersion = AsmSubAssemblies[d].instances[e].documentVersion;
+            }
           }
         }
       }
@@ -687,9 +688,10 @@ function onGenerate3() {
           Parts[j].elementId = AsmInstances[i].elementId;
           Parts[j].partId = AsmInstances[i].partId;
           Parts[j].microversionId = AsmInstances[i].documentMicroversion;
-          if (AsmInstances[i].documentId !== theContext.documentId)
-            Parts[j].externalDocumentId = AsmInstances[i].externalDocumentId;
-            Parts[j].externalDocumentVersion = AsmInstances[i].externalDocumentVersion;
+          if (AsmInstances[i].documentId !== theContext.documentId) {}
+            Parts[j].externalDocumentId = AsmInstances[i].documentId;
+            Parts[j].externalDocumentVersion = AsmInstances[i].documentVersion;
+          }
 
           // If it's suppressed, then mark it as not used in the BOM
           if (AsmInstances[i].suppressed == true) {
