@@ -688,7 +688,7 @@ function onGenerate3() {
           Parts[j].elementId = AsmInstances[i].elementId;
           Parts[j].partId = AsmInstances[i].partId;
           Parts[j].microversionId = AsmInstances[i].documentMicroversion;
-          if (AsmInstances[i].documentId !== theContext.documentId) {}
+          if (AsmInstances[i].documentId !== theContext.documentId) {
             Parts[j].externalDocumentId = AsmInstances[i].documentId;
             Parts[j].externalDocumentVersion = AsmInstances[i].documentVersion;
           }
