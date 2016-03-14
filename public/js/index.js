@@ -479,7 +479,7 @@ function findStudioMetadata(resolve, reject, partStudio) {
             continue;
 
           // Match?
-          if (Parts[y].partId == partId && Parts[y].elementId == elementId) {
+          if (Parts[y].partId == partId && Parts[y].elementId == partStudio.elementId) {
             Parts[y].partnumber = metaParts[x].partNumber;
             if (Parts[y].partnumber == null)
               Parts[y].partnumber = "";
