@@ -448,14 +448,23 @@ function onGenerate() {
   });
 }
 
-//
 // Find the metadata for a given part ... Revision, Part Number
-function findStudioMetadata(resolve, reject, elementId) {
-  $.ajax('/api/studiometadata'+
-  "?documentId=" + theContext.documentId +
-  "&workspaceId=" + theContext.workspaceId +
-  "&elementId=" + elementId +
-  "&microversionId=" + theContext.microversion, {
+function findStudioMetadata(resolve, reject, partStudio) {
+  var uri = '';
+  if (partStudio.externalDocumentId) {
+    uri = '/api/externalstudiometadata' +
+      "?documentId=" + partStudio.externalDocumentId +
+      "&versionId=" + partStudio.externalDocumentVersion +
+      "&elementId=" + partStudio.elementId +
+      "&linkDocumentId=" + theContext.documentId
+  } else {
+    uri = '/api/studiometadata'+
+      "?documentId=" + theContext.documentId +
+      "&workspaceId=" + theContext.workspaceId +
+      "&elementId=" + partStudio.elementId +
+      "&microversionId=" + theContext.microversion
+  }
+  $.ajax(uri, {
     dataType: 'json',
     type: 'GET',
     success: function(data) {
@@ -645,7 +654,9 @@ function onGenerate3() {
       "revision" : 0,
       "isUsed" : true,
       "hasMeta" : false,
-      "count" : 1
+      "count" : 1,
+      "externalDocumentId": 0,
+      "externalDocumentVersion": 0
     };
   }
 
@@ -659,6 +670,9 @@ function onGenerate3() {
             Parts[f].elementId = AsmSubAssemblies[d].instances[e].elementId;
             Parts[f].partId = AsmSubAssemblies[d].instances[e].partId;
             Parts[f].microversionId = AsmSubAssemblies[d].instances[e].documentMicroversion;
+            if (AsmSubAssemblies[d].instances[e].documentId !== theContext.documentId)
+              Parts[f].externalDocumentId = AsmSubAssemblies[d].instances[e].documentId;
+              Parts[f].externalDocumentVersion = AsmSubAssemblies[d].instances[e].documentVersion;
           }
         }
       }
@@ -673,6 +687,9 @@ function onGenerate3() {
           Parts[j].elementId = AsmInstances[i].elementId;
           Parts[j].partId = AsmInstances[i].partId;
           Parts[j].microversionId = AsmInstances[i].documentMicroversion;
+          if (AsmInstances[i].documentId !== theContext.documentId)
+            Parts[j].documentId = AsmInstances[i].externalDocumentId;
+            Parts[j].documentId = AsmInstances[i].externalDocumentVersion;
 
           // If it's suppressed, then mark it as not used in the BOM
           if (AsmInstances[i].suppressed == true) {
@@ -715,14 +732,19 @@ function onGenerate3() {
 
     var needToAdd = true;
     for (var y = 0; y < partStudios.length; ++y) {
-      if (partStudios[y] == Parts[x].elementId) {
+      if (partStudios[y].elementId == Parts[x].elementId) {
         needToAdd = false;
         break;
       }
     }
     // Not found ... add the elementId to the list
     if (needToAdd == true) {
-      partStudios[partStudios.length] = Parts[x].elementId;
+      var partStudio = {elementId: Parts[x].elementId};
+      if (Parts[x].externalDocumentId !== 0) {
+        partStudio.externalDocumentId = Parts[x].externalDocumentId;
+        partStudio.externalDocumentVersion = Parts[x].externalDocumentVersion;
+      }
+      partStudios[partStudios.length] = partStudio;
     }
   }
 

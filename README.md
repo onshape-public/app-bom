@@ -16,7 +16,7 @@ BOM could also be written to run independently of the tab in Onshape. It could c
   
 
 ####**Deploying to Heroku**
-Make sure you have Node.js and the Heroku Toolbelt installed. You will also need heroku account [signup for free] (https://www.heroku.com/) 
+Make sure you have Node.js and the Heroku Toolbelt installed. You will also need a Heroku account ([signup for free](https://www.heroku.com/)).
 
 Execute the following commands to create a duplicate of a repository; you need to perform both a bare-clone and a mirror-push to an newly-created bare repo (please note that you may want to use SSH instead of HTTPS, depending on your Github settings):
 
