@@ -352,7 +352,8 @@ function uiDisplay(state, save) {
   b = document.getElementById("element-model-change-message");
   b.style.display = 'none';
 
-  $("#options_panel").css("visibility", (save == 'off') ? "hidden" : "visible");
+  $("#options_panel").css("visibility", (save == 'on') ? "visible" : "hidden");
+  $("#context-table").css("visibility", (save == 'on') ? "visible" : "hidden");
 }
 
 /////////////////////////////////////
@@ -453,16 +454,16 @@ function findStudioMetadata(resolve, reject, partStudio) {
   var uri = '';
   if (partStudio.externalDocumentId) {
     uri = '/api/externalstudiometadata' +
-      "?documentId=" + partStudio.externalDocumentId +
-      "&versionId=" + partStudio.externalDocumentVersion +
-      "&elementId=" + partStudio.elementId +
-      "&linkDocumentId=" + theContext.documentId
+    "?documentId=" + partStudio.externalDocumentId +
+    "&versionId=" + partStudio.externalDocumentVersion +
+    "&elementId=" + partStudio.elementId +
+    "&linkDocumentId=" + theContext.documentId
   } else {
     uri = '/api/studiometadata'+
-      "?documentId=" + theContext.documentId +
-      "&workspaceId=" + theContext.workspaceId +
-      "&elementId=" + partStudio.elementId +
-      "&microversionId=" + theContext.microversion
+    "?documentId=" + theContext.documentId +
+    "&workspaceId=" + theContext.workspaceId +
+    "&elementId=" + partStudio.elementId +
+    "&microversionId=" + theContext.microversion
   }
   $.ajax(uri, {
     dataType: 'json',
@@ -508,7 +509,7 @@ function findStudioMetadata(resolve, reject, partStudio) {
 //
 function onGenerate2() {
 // Add an image of the model to the page
-  ResultImage = $('<div style="float:right"></div>');
+  ResultImage = $('<div id="image-div" style="float:right"></div>');
   ResultImage.addClass('ResultImage');
 
   var b = document.getElementById('bom-image-size');
@@ -538,7 +539,7 @@ function onGenerate2() {
       this.block = $('<div class="block" position="relative"></div>');
       this.block.attr("bom", "bom")
       this.block.append(ResultImage);
-      ResultTable = $('<table class="table-striped" valign="center"></table>');
+      ResultTable = $('<table class="table-striped"></table>');
       ResultTable.addClass('resultTable');
       this.block.append(ResultTable);
 
@@ -546,12 +547,12 @@ function onGenerate2() {
       var e = document.getElementById("elt-select");
       var asmName = e.options[e.selectedIndex].text;
       ResultTable.append("<caption>"+ asmName + "</caption>");
-      ResultTable.append("<th align='center'>Item number</th>");
+      ResultTable.append("<th align='center'>Item</th>");
 
       ResultTable.append("<th align='left'>Component name</th>");
       ResultTable.append("<th align='center'>Count</th>");
-      ResultTable.append("<th align='center'>Part number</th>");
-      ResultTable.append("<th align='center'>Revision</th>");
+      ResultTable.append("<th align='left'>Part number</th>");
+      ResultTable.append("<th align='left'>Revision</th>");
 
       $('#bomResults').append(this.block);
 
@@ -775,15 +776,15 @@ function onGenerate3() {
           // See if this is the same part ... if so, bump the count
           // This is a different check ... it just compares the components by name
           if (Parts[y].name == Parts[x].name) {
-              Parts[x].count+= Parts[y].count;
-              Parts[y].isUsed = false;
+            Parts[x].count+= Parts[y].count;
+            Parts[y].isUsed = false;
 
-              // Copy over the part number and revision if the 'base' part does not have that info ... API may not have access to the shared properties
-              if (Parts[x].partnumber == '')
-                Parts[x].partnumber = Parts[y].partnumber;
-              if (Parts[x].revision == '')
-                Parts[x].revision = Parts[y].revision;
-            }
+            // Copy over the part number and revision if the 'base' part does not have that info ... API may not have access to the shared properties
+            if (Parts[x].partnumber == '')
+              Parts[x].partnumber = Parts[y].partnumber;
+            if (Parts[x].revision == '')
+              Parts[x].revision = Parts[y].revision;
+          }
         }
       }
     }
@@ -795,9 +796,9 @@ function onGenerate3() {
       if (Parts[i].isUsed == false)
         continue;
 
-      ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td>" + Parts[i].name + "</td>" +
-      "<td align='center'>" + Parts[i].count + "</td>" + "<td align='center'>" + Parts[i].partnumber + "</td>" +
-      "<td align='center'>" + Parts[i].revision + "</td>" + "</tr>");
+      ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td style='padding-left: 20px'>" + Parts[i].name + "</td>" +
+      "<td align='center'>" + Parts[i].count + "</td>" + "<td style='padding-left: 20px'>" + Parts[i].partnumber + "</td>" +
+      "<td style='padding-left: 20px'>" + Parts[i].revision + "</td>" + "</tr>");
       currentSubItemNumber++;
     }
 
@@ -806,13 +807,6 @@ function onGenerate3() {
 
     var b = document.getElementById("element-generate");
     b.firstChild.data = "Update";
-
-//    var theContainer = $('#spinner-area');
-//    theContainer.empty();
-
-//    b = document.getElementById("bom-status-bar");
-//    b.style.display = "none";
-
   });
 }
 
@@ -861,7 +855,15 @@ function onPrint() {
   // Hide the UI ...
   uiDisplay('off', 'off');
 
+  var b = document.getElementById("image-div");
+  b.style.float = 'none';
+  b.style.align = "middle";
+
   window.print();
+
+  var b = document.getElementById("image-div");
+  b.style.float = 'right';
+  b.style.align = "right";
 
   // Put the UI back ...
   uiDisplay('on', 'on');

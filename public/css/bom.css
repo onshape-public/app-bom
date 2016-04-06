@@ -7,8 +7,8 @@
 body {
   font-family: 'Roboto';
   font-size: 12pt;
-  padding: 10;
-  margin: 10;
+  padding: 10px;
+  margin: 10px;
 }
 
 table,
@@ -16,13 +16,15 @@ th {
   font-size: 12pt;
   color: #333333;
   border-bottom: 1px solid #9aa5af;
-  line-height: 36px;
-  padding: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 20px;
+  padding-left: 20px;
 }
-table,
-th,
+
 td {
-  border-collapse: collapse;
+  padding-top: 5px;
+  padding-bottom : 5px;
 }
 button {
   font-size: 12pt;
