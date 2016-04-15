@@ -86,6 +86,11 @@ You will need to set the ID and Secret as environment variables on the server. T
     $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app>
     $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app>
 
+You will also need to register your server host, and the stack url (for example ONSHAPE_PLATFORM=https://staging.dev.onshape.com)
+
+    $ heroku config:set ONSHAPE_HOST=https://newURL-from-heroku.herokuapp.com
+    $ heroku config:set ONSHAPE_PLATFORM=https://STACK.onshape.com
+
 You can verify that they are set by calling this:
 
     $ heroku config
