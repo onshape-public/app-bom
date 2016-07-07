@@ -528,17 +528,12 @@ function onGenerate2() {
     type: 'GET',
     success: function(data) {
       var res = data;
-      if (res.images) {
-        if (res.images.length > 0) {
-          var image = res.images[0];
-          ResultImage.append("<img class='bom-image-border' alt='shaded view' src='data:image/png;base64," + image + "' />");
-        }
-        else {
-          imageString = "<img class='bom-image-border' alt='Assembly image' src='http://i.imgur.com/lEyLDtn.jpg' />";
-          ResultImage.append(imageString);
-        }
-      } else {
-        imageString = "<img class='bom-image-border' alt='An image' src='images/thumbnail-small.png ' />";
+      if (res.images.length > 0) {
+        var image = res.images[0];
+        ResultImage.append("<img class='bom-image-border' alt='shaded view' src='data:image/png;base64," + image + "' />");
+      }
+      else {
+        imageString = "<img class='bom-image-border' alt='Assembly image' src='http://i.imgur.com/lEyLDtn.jpg' />";
         ResultImage.append(imageString);
       }
 
