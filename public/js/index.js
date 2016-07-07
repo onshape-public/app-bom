@@ -250,7 +250,7 @@ function refreshContextElements(selectedIndexIn) {
                       var b = document.getElementById("element-generate");
                       b.style.display = "initial";
                       b.firstChild.data = "Create";
-
+                      $('#imageResults').empty();
                       $('#bomResults').empty();
                     });
 
@@ -371,6 +371,7 @@ function onGenerate() {
 
   return checkPromise.then(function() {
     // Destroy anything previously created ...
+    $('#imageResults').empty();
     $('#bomResults').empty();
 
     theContext.elementId = $("#elt-select option:selected").val();
@@ -509,8 +510,9 @@ function findStudioMetadata(resolve, reject, partStudio) {
 //
 function onGenerate2() {
 // Add an image of the model to the page
-  ResultImage = $('<div id="image-div" style="float:right"></div>');
-  ResultImage.addClass('ResultImage');
+  ResultImage = $('<div id="image-div" class="center-block"></div>');
+  ResultImage.addClass('result-image');
+
 
   var b = document.getElementById('bom-image-size');
   var outputSize = (b.checked == true) ? 300 : 600;
@@ -526,19 +528,24 @@ function onGenerate2() {
     type: 'GET',
     success: function(data) {
       var res = data;
-      if (res.images.length > 0) {
-        var image = res.images[0];
-        ResultImage.append("<img alt='shaded view' src='data:image/png;base64," + image + "' />");
-      }
-      else {
-        imageString = "<img alt='An image' src='http://i.imgur.com/lEyLDtn.jpg' width=550 height=244 />";
+      if (res.images) {
+        if (res.images.length > 0) {
+          var image = res.images[0];
+          ResultImage.append("<img class='bom-image-border' alt='shaded view' src='data:image/png;base64," + image + "' />");
+        }
+        else {
+          imageString = "<img class='bom-image-border' alt='Assembly image' src='http://i.imgur.com/lEyLDtn.jpg' />";
+          ResultImage.append(imageString);
+        }
+      } else {
+        imageString = "<img class='bom-image-border' alt='An image' src='images/thumbnail-small.png ' />";
         ResultImage.append(imageString);
       }
 
       // Create block dom
-      this.block = $('<div class="block" position="relative"></div>');
+      this.block = $('<div class="bom-table-block"></div>');
       this.block.attr("bom", "bom")
-      this.block.append(ResultImage);
+     // this.block.append(ResultImage);
       ResultTable = $('<table class="table-striped"></table>');
       ResultTable.addClass('resultTable');
       this.block.append(ResultTable);
@@ -554,6 +561,7 @@ function onGenerate2() {
       ResultTable.append("<th align='left'>Part number</th>");
       ResultTable.append("<th align='left'>Revision</th>");
 
+      $('.imageResults').append(ResultImage);
       $('#bomResults').append(this.block);
 
       // Get the contents of the assembly
@@ -855,15 +863,7 @@ function onPrint() {
   // Hide the UI ...
   uiDisplay('off', 'off');
 
-  var b = document.getElementById("image-div");
-  b.style.float = 'none';
-  b.style.align = "middle";
-
   window.print();
-
-  var b = document.getElementById("image-div");
-  b.style.float = 'right';
-  b.style.align = "right";
 
   // Put the UI back ...
   uiDisplay('on', 'on');
