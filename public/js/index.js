@@ -250,8 +250,8 @@ function refreshContextElements(selectedIndexIn) {
                       var b = document.getElementById("element-generate");
                       b.style.display = "initial";
                       b.firstChild.data = "Create";
-                      $('#imageResults').empty();
-                      $('#bomResults').empty();
+                      $('#image-results').empty();
+                      $('#bom-results').empty();
                     });
 
                 // Setup the webhook for model changes
@@ -371,8 +371,8 @@ function onGenerate() {
 
   return checkPromise.then(function() {
     // Destroy anything previously created ...
-    $('#imageResults').empty();
-    $('#bomResults').empty();
+    $('#image-results').empty();
+    $('#bom-results').empty();
 
     theContext.elementId = $("#elt-select option:selected").val();
 
@@ -556,8 +556,8 @@ function onGenerate2() {
       ResultTable.append("<th align='left'>Part number</th>");
       ResultTable.append("<th align='left'>Revision</th>");
 
-      $('.imageResults').append(ResultImage);
-      $('#bomResults').append(this.block);
+      $('.image-results').append(ResultImage);
+      $('#bom-results').append(this.block);
 
       // Get the contents of the assembly
       var getPromise = new Promise(findDefinition);
