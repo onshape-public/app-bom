@@ -18,31 +18,48 @@
   <script src="js/underscore-min.js"></script>
   <script src="js/index.js"></script>
 
-   <body>
-    <div id="context-table">
-       <b>Bill of Materials:</b>
-       <select id="elt-select"></select>
-       <select id="type-select">
-          <option>Flattened Component List</option>
-          <option>Tree List</option>
-       </select>
-       <button class="btn btn-primary btn-sm clearfix" id="element-generate">Create</button>
-       <button class="btn btn-default btn-sm clearfix" id="element-save-csv">Save as CSV</button>
-       <button class="btn btn-default btn-sm clearfix" id="element-print">Print</button>
-       <div class="options" id="options_panel">
-           <input type="checkbox" id="bom-component-collapse"> Combine components by name<br>
-           <input type="checkbox" id="bom-image-size"> Create smaller image<br>
-       </div>
-       <div class="infomessage" id="element-model-change-message">
-            <p><i>* Model has been changed. BOM may not be up to date. *</i></p>
-       </div>
-    </div>
-    <div class="bom-progress-bar" id="bom-status-bar" style="display: none;">
-    </div>
-    <div id="bomResults">
-    </div>
-    <div class="alert alert-info" id="alert_template" style="display: none;">
-        <button type="button" class="close">×</button>
-    </div>
-   </body>
+  <body>
+  <div class="bom-controls">
+      <div class="bom-content-top">
+          <div class="row">
+                  <h3 class="bom-title">Bill of Materials</h3>
+          </div>
+          <div id="context-table">
+              <div class="bom-ctrl-aligned">
+                  <button class="btn bom-btn-primary btn-sm clearfix" id="element-generate">Create</button>
+                  <select id="elt-select" class="form-control bom-select"></select>
+                  <select id="type-select" class="form-control bom-select">
+                      <option>Flattened Component List</option>
+                      <option>Tree List</option>
+                  </select>
+                  <span class ="bom-inputs">
+                      <span class="bom-input"><input type="checkbox" id="bom-component-collapse">Combine components by name</span>
+                      <span class="bom-input"><input type="checkbox" id="bom-image-size">Create smaller image</span>
+                  </span>
+                  <div class="options" id="options_panel">
+                      <button class="btn btn-default btn-sm clearfix bom-btn" id="element-save-csv">Save as CSV</button>
+                      <button class="btn btn-default btn-sm clearfix bom-btn" id="element-print">Print</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="bom-content">
+      <div class="info-message" id="element-model-change-message">
+          <p><i>* Model has been changed. BOM may not be up to date. *</i></p>
+      </div>
+      <div class="row">
+          <div class="col-md-12 os-col-border" class="bom-progress-bar" id="bom-status-bar" style="display: none;"></div>
+      </div>
+      <div class="row bom-row">
+          <div class="col-md-6 col-sm-6 col-xs-12 os-col-border image-container">
+              <div class="image-results" id="image-results"></div>
+          </div>
+          <div class="col-md-6 col-sm-6 col-xs-12 os-col-border bom-results" id="bom-results"></div>
+      </div>
+  </div>
+  <div class="alert alert-info" id="alert_template" style="display: none;">
+      <button type="button" class="close">×</button>
+  </div>
+  </body>
 </html>
