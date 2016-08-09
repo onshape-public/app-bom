@@ -513,9 +513,7 @@ function onGenerate2() {
   ResultImage = $('<div id="image-div" class="center-block"></div>');
   ResultImage.addClass('result-image');
 
-
-  var b = document.getElementById('bom-image-size');
-  var outputSize = (b.checked == true) ? 300 : 600;
+  var outputSize = 600;
 
   var options = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId +
       "&outputHeight=" + outputSize + "&outputWidth=" + outputSize + "&pixelSize=" + realSize / outputSize +
