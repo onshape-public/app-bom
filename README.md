@@ -4,18 +4,13 @@ Sample app for Bill of Materials
 BOM is an node.js application demonstrating assembly navigation, metadata retrieval and shaded view generation with use of set of rich primary APIs provided by Onshape that allows Partners to interact with Onshape fully cloud based CAD system.
 
 ####**Using BOM**
-Go to your [app preferences](https://partner.dev.onshape.com/). Click the "Create application" within Onshape document. Fill out the form like so:
-
-* **Name**: My BOM app
-* **URL**: https://onshape-app-bom.herokuapp.com/oauthSignin
-* **Base HREF**: You can leave this blank
-
 This app requires to be run in a tab of Onshape, an iFrame. In this type of configuration, Onshape will pass documentId, workspaceId and elementId as query params to the frame. These are utilized by the BOM app to give it context of what the active document is within Onshape. 
 
 BOM could also be written to run independently of the tab in Onshape. It could connect to Onshape and get a list of documents for the currently logged in user and then allow the user to select which one to work with.
   
 
 ####**Deploying to Heroku**
+
 Make sure you have Node.js and the Heroku Toolbelt installed. You will also need a Heroku account ([signup for free](https://www.heroku.com/)).
 
 Execute the following commands to create a duplicate of a repository; you need to perform both a bare-clone and a mirror-push to an newly-created bare repo (please note that you may want to use SSH instead of HTTPS, depending on your Github settings):
@@ -37,7 +32,9 @@ Execute the following commands to create a duplicate of a repository; you need t
     $ cd new-repository
     $ heroku create
 
-To regsister the new app, go to the Dev Portal, https://dev-portal.dev.onshape.com. The output from Heroku should produce the domain name:
+####**Creating the App and Store Entry**
+
+To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.com) to create your OAuth Application and private Store Entry, which you can then subscribe to in the [App Store](https://appstore.onshape.com) in order to add it to your documents. The output from Heroku should produce the domain name:
 
     Application name (ex: Onshape BOM Sample)
     Application description (one sentence; ex: "Onshape BOM Sample application — source code is available.")
@@ -96,6 +93,12 @@ You can verify that they are set by calling this:
 
     $ heroku config
 
+Other required environment variables that must be set include:
+
+    ONSHAPE_PLATFORM: should be "https://cad.onshape.com"
+    ONSHAPE_HOST: should be your hostname from Heroku, e.g. "https://newURL-from-heroku.herokuapp.com"
+    ONSHAPE_OAUTH_SERVICE: should be "https://oauth.onshape.com"
+
 One more step before you can use this app sample with Onshape. It requires RedisTOGO. 
 
     $ heroku addons:create redistogo
@@ -118,5 +121,5 @@ For more information about using Node.js on Heroku, see these Dev Center article
  
 ######***OAuth***
 Onshape uses standard OAuth2. 
- - [See the RFC for a detailed description of OAuth] (https://tools.ietf.org/html/rfc6749) 
- - [Digital Ocean provides a nice tutorial on using OAuth] (https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
+ - [See the RFC for a detailed description of OAuth](https://tools.ietf.org/html/rfc6749)
+ - [Digital Ocean provides a nice tutorial on using OAuth](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
