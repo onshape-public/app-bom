@@ -1,19 +1,31 @@
 var request = require('request-promise');
+var dateUtils = require('date-utils');
 var passport = require('passport');
 var OnshapeStrategy = require('passport-onshape').Strategy;
 
 var oauthClientId;
 var oauthClientSecret;
-
-var platformPath = process.env.ONSHAPE_PLATFORM;
-var hostedPath = process.env.ONSHAPE_HOST;
-var oauthPath = process.env.ONSHAPE_OAUTH_SERVICE;
+var callbackUrl = "https://onshape-app-stl.herokuapp.com/oauthRedirect";
+var oauthUrl = 'https://oauth.onshape.com';
+var apiUrl = 'https://cad.onshape.com';
 
 if (process.env.OAUTH_CLIENT_ID) {
   oauthClientId = process.env.OAUTH_CLIENT_ID;
 }
 if (process.env.OAUTH_CLIENT_SECRET) {
   oauthClientSecret = process.env.OAUTH_CLIENT_SECRET;
+}
+
+if (process.env.OAUTH_URL) {
+  oauthUrl = process.env.OAUTH_URL;
+}
+
+if (process.env.API_URL) {
+  apiUrl = process.env.API_URL;
+}
+
+if (process.env.OAUTH_CALLBACK_URL) {
+  callbackUrl = process.env.OAUTH_CALLBACK_URL;
 }
 
 function init() {
@@ -27,10 +39,11 @@ function init() {
   passport.use(new OnshapeStrategy({
       clientID: oauthClientId,
       clientSecret: oauthClientSecret,
-      callbackURL: hostedPath + "/oauthRedirect",
-      authorizationURL: oauthPath + "/oauth/authorize",
-      tokenURL: oauthPath + "/oauth/token",
-      userProfileURL: platformPath + "/api/users/session"
+      // Replace the callbackURL string with your own deployed servers path to handle the OAuth redirect
+      callbackURL: callbackUrl,
+      authorizationURL: oauthUrl + "/oauth/authorize",
+      tokenURL: oauthUrl + "/oauth/token",
+      userProfileURL: apiUrl + "/api/users/sessioninfo"
     },
     function(accessToken, refreshToken, profile, done) {
       // asynchronous verification, for effect...
@@ -68,7 +81,7 @@ function refreshOAuthToken(req, res, next) {
 
   if (refreshToken) {
     pendingTokenRefreshes[req.session.id] = request.post({
-      uri: platformPath + '/oauth/token',
+      uri: oauthUrl + '/oauth/token',
       form: {
         'client_id': oauthClientId,
         'client_secret': oauthClientSecret,
@@ -94,7 +107,7 @@ function refreshOAuthToken(req, res, next) {
 }
 
 function getAuthUri() {
-  return platformPath + '/oauth/authorize?response_type=code&client_id=' + oauthClientId;
+  return oauthUrl + '/oauth/authorize?response_type=code&client_id=' + oauthClientId;
 }
 
 module.exports = {
