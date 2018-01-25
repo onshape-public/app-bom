@@ -7,7 +7,10 @@ var authentication = require('../authentication');
 var request = require('request-promise');
 var url = require('url');
 
-var platformPath = process.env.ONSHAPE_PLATFORM;
+var  apiUrl = 'https://cad.onshape.com';
+if (process.env.API_URL) {
+  apiUrl = process.env.API_URL;
+}
 
 var client;
 if (process.env.REDISTOGO_URL) {
@@ -15,6 +18,8 @@ if (process.env.REDISTOGO_URL) {
   client = require("redis").createClient(rtg.port, rtg.hostname);
 
   client.auth(rtg.auth.split(":")[1]);
+} else if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
+  client = require("redis").createClient(process.env.REDIS_PORT, process.env.REDIS_HOST);
 } else {
   client = redis.createClient();
 }
@@ -56,7 +61,7 @@ router.post('/logout', function(req, res) {
 
 var getSession = function(req, res) {
   request.get({
-    uri: platformPath + '/api/users/sessioninfo',
+    uri: apiUrl + '/api/users/sessioninfo',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -78,7 +83,7 @@ var getSession = function(req, res) {
 
 var getDocuments = function(req, res) {
   request.get({
-    uri: platformPath + '/api/documents',
+    uri: apiUrl + '/api/documents',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -98,7 +103,7 @@ var getDocuments = function(req, res) {
 };
 
 var getElementList = function(req, res) {
-  var url = platformPath + '/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements';
+  var url = apiUrl + '/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements';
   if (req.query.elementId) {
     url += '/?elementId=' + req.query.elementId;
   }
@@ -125,7 +130,7 @@ var getElementList = function(req, res) {
 };
 
 var getAssemblyList = function(req, res) {
-  var url = platformPath + '/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements?elementType=assembly';
+  var url = apiUrl + '/api/documents/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/elements?elementType=assembly';
   if (req.query.elementId) {
     url += '/?elementId=' + req.query.elementId;
   }
@@ -154,7 +159,7 @@ var getAssemblyList = function(req, res) {
 
 var getShadedView = function(req, res) {
   request.get({
-    uri: platformPath + '/api/assemblies/d/' + req.query.documentId +
+    uri: apiUrl + '/api/assemblies/d/' + req.query.documentId +
     '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/shadedviews?' +
     '&outputHeight=' + req.query.outputHeight + '&outputWidth=' + req.query.outputWidth + '&pixelSize=' + req.query.pixelSize +
     '&viewMatrix=' + req.query.viewMatrix1 + ',' + req.query.viewMatrix2 + ',' + req.query.viewMatrix3 + ',' + req.query.viewMatrix4 +
@@ -182,7 +187,7 @@ var getShadedView = function(req, res) {
 
 var getBoundingBox = function(req, res) {
   request.get({
-    uri: platformPath + '/api/assemblies/d/' + req.query.documentId +
+    uri: apiUrl + '/api/assemblies/d/' + req.query.documentId +
           '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/boundingboxes/',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
@@ -204,7 +209,7 @@ var getBoundingBox = function(req, res) {
 
 var getPartsList = function(req, res) {
   request.get({
-    uri: platformPath + '/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
+    uri: apiUrl + '/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -225,7 +230,7 @@ var getPartsList = function(req, res) {
 
 var getAssemblyDefinition = function(req, res) {
   request.get({
-    uri: platformPath + '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.nextElement + '?includeMateFeatures=false',
+    uri: apiUrl + '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.nextElement + '?includeMateFeatures=false',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -246,7 +251,7 @@ var getAssemblyDefinition = function(req, res) {
 
 var getMetadata = function(req, res) {
    request.get({
-    uri:platformPath + '/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/partid/' + req.query.partId + '/metadata',
+    uri:apiUrl + '/api/parts/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/partid/' + req.query.partId + '/metadata',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -270,7 +275,7 @@ var getStudioMetadata = function(req, res) {
   if (req.query.microversionId > 0)
     url = '/api/partstudios/d/' + req.query.documentId + '/m/' + req.query.microversionId + '/e/' + req.query.elementId + '/metadata'
   request.get({
-    uri:platformPath + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata',
+    uri:apiUrl + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/metadata',
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -292,7 +297,7 @@ var getStudioMetadata = function(req, res) {
 var getExternalStudioMetadata = function(req, res) {
   var url = '/api/partstudios/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/metadata?linkDocumentId=' + req.query.linkDocumentId;
   request.get({
-    uri:platformPath + url,
+    uri:apiUrl + url,
     headers: {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
@@ -320,7 +325,7 @@ var setWebhooks = function(req, res) {
                "{$ElementId} = '" + req.query.elementId + "'";
 
   request.post({
-    uri: platformPath + '/api/webhooks/',
+    uri: apiUrl + '/api/webhooks/',
     body: {
       url : urlNotify,
       events : eventList,
@@ -375,7 +380,7 @@ var checkModelChange = function(req, res) {
 }
 
 var getAccounts = function(req, res) {
-  var url = process.env.ONSHAPE_PLATFORM + '/api/accounts/purchases';
+  var url = apiUrl + '/api/accounts/purchases';
 
   request.get({
     uri: url,
@@ -413,7 +418,7 @@ var getAccounts = function(req, res) {
 };
 
 var getWorkspace = function(req, res) {
-  var url = process.env.ONSHAPE_PLATFORM + '/api/documents/d/' + req.query.documentId + '/workspaces';
+  var url = apiUrl + '/api/documents/d/' + req.query.documentId + '/workspaces';
 
   request.get({
     uri: url,
@@ -437,7 +442,7 @@ var getWorkspace = function(req, res) {
 };
 
 var getVersions = function(req, res) {
-  var url = process.env.ONSHAPE_PLATFORM + '/api/documents/d/' + req.query.documentId + '/versions';
+  var url = apiUrl + '/api/documents/d/' + req.query.documentId + '/versions';
 
   request.get({
     uri: url,
