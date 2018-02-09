@@ -331,6 +331,20 @@ function findDefinition(resolve, reject) {
   });
 }
 
+function fetchAssemblyBom(resolve, reject) {
+  var params = "?documentId=" + theContext.documentId + "&workspaceId=" + theContext.workspaceId + "&elementId=" + theContext.elementId;
+  $.ajax('/api/bom' + params, {
+    dataType: 'json',
+    type: 'GET',
+    success: function(data) {
+      resolve(data);
+    },
+    error: function() {
+      reject("Error fetching Assembly BOM");
+    }
+  })
+}
+
 //
 // Turn bits of the UI on/off
 function uiDisplay(state, save) {
@@ -558,21 +572,25 @@ function onGenerate2() {
       $('#bom-results').append(this.block);
 
       // Get the contents of the assembly
-      var getPromise = new Promise(findDefinition);
+      // var getPromise = new Promise(findDefinition);
 
-      // Find all assemblies in the model
-      return getPromise.then(function() {
+      var fetchPromise = new Promise(fetchAssemblyBom);
 
-        // If there is nothing to do (assembly is empty) then just bail out
-        if (AsmInstances.length == 0) {
-          var b = document.getElementById("element-generate");
-          b.style.display = "initial";
+      return fetchPromise.then(function(response) {
+        var i;
+        var partsTableData = [];
 
-          return;
+        for (i = 0; i < response.bomTable.items.length; i++) {
+          partsTableData.push({
+            name: response.bomTable.items[i].name,
+            count: response.bomTable.items[i].quantity,
+            partnumber: response.bomTable.items[i].partNumber,
+            revision: response.bomTable.items[i].revision,
+            isUsed: true
+          });
         }
-
-        // Match up revision/part number and total counts here
-        onGenerate3();
+        Parts = partsTableData;
+        updateBomTableDisplay(partsTableData);
       });
     },
     error: function() {
@@ -581,234 +599,55 @@ function onGenerate2() {
   });
 }
 
-//
-// Primary worker function to create the flattened parts list and generate HTML
-//
-function onGenerate3() {
-  Parts = [];
-  SubAsmIds = [];
-
-  // Create the list of sub-assemblies ... need to check two different lists
-  for (var x = 0; x < AsmInstances.length; ++ x) {
-    if (AsmInstances[x].type == "Assembly") {
-      var foundId = false;
-      for (var y = 0; y < SubAsmIds.length; ++y) {
-        if (SubAsmIds[y].elementId == AsmInstances[x].id) {
-          foundId = true;
-          break;
-        }
+function updateBomTableDisplay(tableItems) {
+  // If we are collating by component name, run through the parts again looking for instances
+  var b = document.getElementById('bom-component-collapse');
+  if (b.checked == true) {
+    for (var x = 0; x < tableItems.length; ++x) {
+      // Skip collated parts
+      if (tableItems[x].isUsed == false) {
+        continue;
       }
 
-      if (foundId == false)
-        SubAsmIds[SubAsmIds.length] = { "elementId" : AsmInstances[x].elementId, "bbox" : 0, "id" : AsmInstances[x].id };
-    }
-  }
-
-  for (var w = 0; w < AsmSubAssemblies.length; ++ w) {
-    for (var z = 0; z < AsmSubAssemblies[w].instances.length; ++z) {
-      if (AsmSubAssemblies[w].instances[z].type == "Assembly") {
-        var foundSub = false;
-        for (var a = 0; a < SubAsmIds.length; ++a) {
-          if (SubAsmIds[a].elementId == AsmSubAssemblies[w].instances[z].id) {
-            foundSub = true;
-            break;
-          }
-        }
-
-        if (foundSub == false)
-          SubAsmIds[SubAsmIds.length] = { "elementId" : AsmSubAssemblies[w].instances[z].elementId, "bbox" : 0, "id" : AsmSubAssemblies[w].instances[z].id  };
-      }
-    }
-  }
-
-  // Create an a scratch list of parts from the occurrences ... i.e. stripping out the sub-assemblies
-  for (var b = 0; b < AsmOccurences.length; ++b) {
-    var lastPath = AsmOccurences[b].path[AsmOccurences[b].path.length-1];
-    var parentPath = "";
-    if (AsmOccurences[b].path.length > 1)
-      parentPath = AsmOccurences[b].path[AsmOccurences[b].path.length-2];
-
-    var transform = AsmOccurences[b].transform;
-    var index = b;
-
-    // Make sure this is a part (won't be on the sub assembly list we just built)
-    var found = false;
-    for (var c = 0; c < SubAsmIds.length; ++c) {
-      if (SubAsmIds[c].id == lastPath) {
-        found = true;
-        break;
-      }
-    }
-
-    if (found == true)
-      continue;
-
-    // Add this part to the list of parts to explode
-    Parts[Parts.length] = {
-      "id" : lastPath,
-      "parentId" : parentPath,
-      "index" : index,
-      "elementId" : 0,
-      "partId" : 0,
-      "microversionId" : 0,
-      "name" : 0,
-      "partnumber" : 0,
-      "revision" : 0,
-      "isUsed" : true,
-      "hasMeta" : false,
-      "count" : 1,
-      "externalDocumentId": 0,
-      "externalDocumentVersion": 0
-    };
-  }
-
-  // Find each Part's elementId and partId and match to its bbox
-  for (var d = 0; d < AsmSubAssemblies.length; ++ d) {
-    for (var e = 0; e < AsmSubAssemblies[d].instances.length; ++e) {
-      if (AsmSubAssemblies[d].instances[e].type == "Part") {
-        // See if this id matches any of the ones in the parts list
-        for (var f = 0; f < Parts.length; ++f) {
-          if (Parts[f].id == AsmSubAssemblies[d].instances[e].id) {
-            Parts[f].elementId = AsmSubAssemblies[d].instances[e].elementId;
-            Parts[f].partId = AsmSubAssemblies[d].instances[e].partId;
-            Parts[f].microversionId = AsmSubAssemblies[d].instances[e].documentMicroversion;
-            if (AsmSubAssemblies[d].instances[e].documentId !== theContext.documentId) {
-              Parts[f].externalDocumentId = AsmSubAssemblies[d].instances[e].documentId;
-              Parts[f].externalDocumentVersion = AsmSubAssemblies[d].instances[e].documentVersion;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  for (var i = 0; i < AsmInstances.length; ++i) {
-    if (AsmInstances[i].type == "Part") {
-      // Do we have a match on the id?
-      for (var j = 0; j < Parts.length; ++ j) {
-        if (Parts[j].id == AsmInstances[i].id) {
-          Parts[j].elementId = AsmInstances[i].elementId;
-          Parts[j].partId = AsmInstances[i].partId;
-          Parts[j].microversionId = AsmInstances[i].documentMicroversion;
-          if (AsmInstances[i].documentId !== theContext.documentId) {
-            Parts[j].externalDocumentId = AsmInstances[i].documentId;
-            Parts[j].externalDocumentVersion = AsmInstances[i].documentVersion;
-          }
-
-          // If it's suppressed, then mark it as not used in the BOM
-          if (AsmInstances[i].suppressed == true) {
-            Parts[j].isUsed = false;
-          }
-        }
-      }
-    }
-  }
-
-  // Next, look to combine Parts
-  var isFlat = true;
-  for (var x = 0; x < Parts.length; ++x) {
-    // Eliminate invalid parts
-    if (Parts[x].partId == "") {
-      Parts[x].isUsed = false;
-      continue;
-    }
-
-    // Check against all other parts to see if this part is already in the list (check vs. PartId)
-    if (Parts[x].isUsed == true) {
-      for (var y = x + 1; y < Parts.length; ++y) {
-        if (Parts[y].isUsed == false)
+      // Check against all other parts to see if this part is already in the list (check vs. PartId)
+      for (var y = x + 1; y < tableItems.length; ++y) {
+        if (tableItems[y].isUsed == false)
           continue;
 
         // See if this is the same part ... if so, bump the count
-        if (Parts[y].partId == Parts[x].partId && Parts[y].elementId == Parts[x].elementId) {
-          Parts[x].count++;
-          Parts[y].isUsed = false;
+        // This is a different check ... it just compares the components by name
+        if (tableItems[y].name == tableItems[x].name) {
+          tableItems[x].count+= tableItems[y].count;
+          tableItems[y].isUsed = false;
+
+          // Copy over the part number and revision if the 'base' part does not have that info ... API may not have access to the shared properties
+          if (tableItems[x].partnumber == '')
+          tableItems[x].partnumber = tableItems[y].partnumber;
+          if (tableItems[x].revision == '')
+          tableItems[x].revision = tableItems[y].revision;
         }
       }
     }
   }
 
-// Now that we have the list of components ... go get the Metadata for each one
-  var partStudios = [];
-  for (x = 0; x < Parts.length; ++x) {
-    if (Parts[x].isUsed == false)
+  // Ready to generate BOM
+  var currentItemNumber = 0;
+  var currentSubItemNumber = 0;
+  for (var i = 0; i < tableItems.length; ++i) {
+    if (tableItems[i].isUsed == false)
       continue;
 
-    var needToAdd = true;
-    for (var y = 0; y < partStudios.length; ++y) {
-      if (partStudios[y].elementId == Parts[x].elementId) {
-        needToAdd = false;
-        break;
-      }
-    }
-    // Not found ... add the elementId to the list
-    if (needToAdd == true) {
-      var partStudio = {elementId: Parts[x].elementId};
-      if (Parts[x].externalDocumentId !== 0) {
-        partStudio.externalDocumentId = Parts[x].externalDocumentId;
-        partStudio.externalDocumentVersion = Parts[x].externalDocumentVersion;
-      }
-      partStudios[partStudios.length] = partStudio;
-    }
+    ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td style='padding-left: 20px'>" + tableItems[i].name + "</td>" +
+    "<td align='center'>" +tableItems[i].count + "</td>" + "<td style='padding-left: 20px'>" + tableItems[i].partnumber + "</td>" +
+    "<td style='padding-left: 20px'>" + tableItems[i].revision + "</td>" + "</tr>");
+    currentSubItemNumber++;
   }
 
-  var listPromises = [];
+  // We can now save this off in other formats (like CSV)
+  uiDisplay('on', 'on');
 
-  // Find the Metadata through the PartStudios so that it is faster to fetch via the API
-  for (x = 0; x < partStudios.length; ++x) {
-    listPromises.push(new Promise(function(resolve, reject) { findStudioMetadata(resolve, reject, partStudios[x]); }));
-  }
-
-  return Promise.all(listPromises).then(function() {
-    // If we are collating by component name, run through the parts again looking for instances
-    var b = document.getElementById('bom-component-collapse');
-    if (b.checked == true) {
-      for (var x = 0; x < Parts.length; ++x) {
-        // Skip collated parts
-        if (Parts[x].isUsed == false) {
-          continue;
-        }
-
-        // Check against all other parts to see if this part is already in the list (check vs. PartId)
-        for (var y = x + 1; y < Parts.length; ++y) {
-          if (Parts[y].isUsed == false)
-            continue;
-
-          // See if this is the same part ... if so, bump the count
-          // This is a different check ... it just compares the components by name
-          if (Parts[y].name == Parts[x].name) {
-            Parts[x].count+= Parts[y].count;
-            Parts[y].isUsed = false;
-
-            // Copy over the part number and revision if the 'base' part does not have that info ... API may not have access to the shared properties
-            if (Parts[x].partnumber == '')
-              Parts[x].partnumber = Parts[y].partnumber;
-            if (Parts[x].revision == '')
-              Parts[x].revision = Parts[y].revision;
-          }
-        }
-      }
-    }
-
-    // Ready to generate BOM
-    var currentItemNumber = 0;
-    var currentSubItemNumber = 0;
-    for (var i = 0; i < Parts.length; ++i) {
-      if (Parts[i].isUsed == false)
-        continue;
-
-      ResultTable.append("<tr>" + "<td align='center'>" + (currentSubItemNumber + 1) + "</td>" + "<td style='padding-left: 20px'>" + Parts[i].name + "</td>" +
-      "<td align='center'>" + Parts[i].count + "</td>" + "<td style='padding-left: 20px'>" + Parts[i].partnumber + "</td>" +
-      "<td style='padding-left: 20px'>" + Parts[i].revision + "</td>" + "</tr>");
-      currentSubItemNumber++;
-    }
-
-    // We can now save this off in other formats (like CSV)
-    uiDisplay('on', 'on');
-
-    var b = document.getElementById("element-generate");
-    b.firstChild.data = "Update";
-  });
+  var b = document.getElementById("element-generate");
+  b.firstChild.data = "Update";
 }
 
 //
