@@ -156,6 +156,31 @@ var getAssemblyList = function(req, res) {
   });
 };
 
+var getBom = function(req, res) {
+  var url = apiUrl + '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/bom?indented=false';
+
+  request.get({
+    uri: url,
+    headers: {
+           'Authorization': 'Bearer ' + req.user.accessToken
+         }
+  }).then(function(data) {
+    res.send(data);
+  }).catch(function(data) {
+    console.log('****** getBom - CATCH ' + data.statusCode);
+    if (data.statusCode === 401) {
+      authentication.refreshOAuthToken(req, res).then(function() {
+        getElementList(req, res);
+      }).catch(function(err) {
+        console.log('Error refreshing token or getting elements: ', err);
+      });
+    } else {
+      console.log('GET /api/assemblies/:dwe:/bom error: ', data);
+      res.status(data.statusCode);
+      res.send(data);
+    }
+  });
+};
 
 var getShadedView = function(req, res) {
   request.get({
@@ -469,6 +494,7 @@ router.get('/documents', getDocuments);
 router.get('/session', getSession);
 router.get('/elements', getElementList);
 router.get('/assemblies', getAssemblyList);
+router.get('/bom', getBom);
 router.get('/parts', getPartsList);
 router.get('/boundingBox', getBoundingBox);
 router.get('/definition', getAssemblyDefinition);
