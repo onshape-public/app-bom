@@ -1,7 +1,7 @@
-#**app-bom**
+# **app-bom**
 Sample app for Bill of Materials
 
-BOM is an node.js application demonstrating assembly navigation, metadata retrieval and shaded view generation with use of set of rich primary APIs provided by Onshape that allows Partners to interact with Onshape fully cloud based CAD system.
+BOM is a node.js application demonstrating assembly navigation, metadata retrieval and shaded view generation with use of set of rich primary APIs provided by Onshape that allows Partners to interact with Onshape fully cloud based CAD system.
 
 ### **Using BOM**
 This app requires to be run in a tab of Onshape, an iFrame. In this type of configuration, Onshape will pass documentId, workspaceId and elementId as query params to the frame. These are utilized by the BOM app to give it context of what the active document is within Onshape.
@@ -31,76 +31,55 @@ Execute the following commands to create a duplicate of a repository; you need t
     $ git clone https://github.com/exampleuser/new-respository.git
     $ cd new-repository
     $ heroku create
+    
+The output from Heroku should produce the domain name... which will be something like: `https://fathomless-thicket-78154.herokuapp.com/`. We will refer to this url as the environment variable MY_APP_URL.
 
 #### **Creating the App and Store Entry**
 
-To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.com) to create your OAuth Application and private Store Entry, which you can then subscribe to in the [App Store](https://appstore.onshape.com) in order to add it to your documents. The output from Heroku should produce the domain name:
+To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.com) to create your OAuth Application. Fill all the fields in, make sure to add "Application can read your documents" scope, and make sure to set the URLs to point to your app url correctly as shown here:
+    
+    Redirect URLs: <MY_APP_URL>/oauthSignin
+    iframe URL: <MY_APP_URL>/oauthRedirect
+    
+Example:
+[URL to my screenshot]
 
-    Application name (ex: Onshape BOM Sample)
-    Application description (one sentence; ex: "Onshape BOM Sample application — source code is available.")
-    URL for sign-in (ex: onshape-app-bom.herokuapp.com/oauthSignin)
-    URL for redirect (ex: onshape-app-bom.herokuapp.com/oauthRedirect)
-    Requested Format ID (ex: Onshape-Demo/BOM)
+Onshape will register the app on Partner server and send back the OAUTH Secret which are required for the next step.
 
-Onshape will register the app on Partner server and send back the OAUTH ID/Secret which are required for authentication.
+#### **Set Heroku App Environment**
 
-Make changes to code at two places for the new URL that Heroku has produced, as shown below:
+Make changes to code at one place to point the app to the URL Heroku has created:
 
-    file# 1: ./package.json
+    file: ./package.json
 
        .........
        ........
        "repository": {
        "type": "git",
-       "url": "https://newURL-from-heroku.herokuapp.com/"
+       "url": "<MY_APP_URL>"
        },
        ...........
-
-   And
-
-    file# 2: ./authentication.js
-
-        ...........
-       passport.use(new OnshapeStrategy({
-         clientID: oauthClientId,
-         clientSecret: oauthClientSecret,
-         callbackURL: "https://newURL-from-heroku.herokuapp.com/oauthRedirect",
-         .............
-       },
-       function(accessToken, refreshToken, profile, done) {
-         ...........
 
 Push the local repo code along with code changes to heruko
 
     $ git add package.json
-    $ git add authentication.js
     $ git commit -am "changes to code for callbackURL"
-
     $ git push heroku master
 
-You will need to set the ID and Secret as environment variables on the server. These are only visible to the app running on the server preserving security of that information.
+You will need to set the ID and Secret as environment variables on the server. These are only visible to the app running on the server, which preserves the security of that information.
 
-    $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app>
-    $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app>
-    $ heroku config:set OAUTH_CALLBACK_URL=<https://newURL-from-heroku.herokuapp.com>
-
-You will also need to register your server host, the stack url (for example ONSHAPE_PLATFORM=https://cad.onshape.com), and the Onshape authentication URL.
-
-    $ heroku config:set ONSHAPE_HOST=https://newURL-from-heroku.herokuapp.com
-    $ heroku config:set ONSHAPE_PLATFORM=https://STACK.onshape.com
+    $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app - available in the dev-portal>
+    $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app when you make the OAuth app>
+    $ heroku config:set OAUTH_CALLBACK_URL=<MY_APP_URL>/oauthRedirect
+    $ heroku config:set ONSHAPE_HOST=<MY_APP_URL>
+    $ heroku config:set ONSHAPE_PLATFORM=https://cad.onshape.com
     $ heroku config:set ONSHAPE_OAUTH_SERVICE=https://oauth.onshape.com
 
 You can verify that they are set by calling this:
 
     $ heroku config
 
-Other required environment variables that must be set include:
-
-    ONSHAPE_PLATFORM: should be "https://cad.onshape.com"
-    ONSHAPE_HOST: should be your hostname from Heroku, e.g. "https://newURL-from-heroku.herokuapp.com"
-    ONSHAPE_OAUTH_SERVICE: should be "https://oauth.onshape.com"
-
-One more step before you can use this app sample with Onshape. It requires RedisTOGO.
+You will also need to install RedisTOGO onto your Heroku app:
 
     $ heroku addons:create redistogo
 
@@ -109,6 +88,9 @@ If you are new to Heroku, it may complain the first time you do this for an app 
 Use heroku config again to verify that RedisTOGO is setup. You'll see this in the config.
 
     REDISTOGO_URL:        redis://redistogo:bb0854dd586250250969a8b0ea4aa695@hammerjaw.redistogo.com:11093/
+    
+Now your app is ready! Just sign up for the app on the [App Store](https://appstore.onshape.com).
+
 
 ### **Working with Docker**
 
