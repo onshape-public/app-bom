@@ -36,12 +36,12 @@ The output from Heroku should produce the domain name... which will be something
 
 #### **Creating the App and Store Entry**
 
-To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.com) to create your OAuth Application. Fill all the fields in, make sure to add "Application can read your documents" scope, and make sure to set the URLs to point to your app url correctly as shown here:
+To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.com) to create your OAuth Application. Fill all the fields in, make sure to add "Application can read your documents" and "Application can read your profile information" permissions, and make sure to set the URLs to point to your app url correctly as shown here:
     
-    Redirect URLs: <MY_APP_URL>/oauthSignin
-    iframe URL: <MY_APP_URL>/oauthRedirect
+    Redirect URLs: <MY_APP_URL>/oauthRedirect
+    iframe URL: <MY_APP_URL>/oauthSignin
 
-Onshape will register the app on Partner server and send back the OAUTH Secret which are required for the next step.
+Onshape will register the app on Partner server and send back the OAUTH Secret which are required for the next step. SAVE IT! It will not be visible again unless you reset the key for security reasons.
 
 #### **Set Heroku App Environment**
 
@@ -65,12 +65,13 @@ Push the local repo code along with code changes to heruko
 
 You will need to set the ID and Secret as environment variables on the server. These are only visible to the app running on the server, which preserves the security of that information.
 
-    $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app - available in the dev-portal>
-    $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app when you make the OAuth app>
+    $ heroku config:set OAUTH_CLIENT_ID=<ID given by Onshape for this app - available in the dev-portal. Include the `=`'s on the end>
+    $ heroku config:set OAUTH_CLIENT_SECRET=<Secret given by Onshape for this app when you make the OAuth app.  Include the `=`'s on the end>
     $ heroku config:set OAUTH_CALLBACK_URL=<MY_APP_URL>/oauthRedirect
     $ heroku config:set ONSHAPE_HOST=<MY_APP_URL>
-    $ heroku config:set ONSHAPE_PLATFORM=https://cad.onshape.com
+    $ heroku config:set ONSHAPE_URL=https://cad.onshape.com
     $ heroku config:set ONSHAPE_OAUTH_SERVICE=https://oauth.onshape.com
+    $ heroku config:set API_URL=https://staging.dev.onshape.com
 
 You can verify that they are set by calling this:
 
