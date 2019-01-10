@@ -40,9 +40,6 @@ To regsister the new app, use the [Developer Portal](https://dev-portal.onshape.
     
     Redirect URLs: <MY_APP_URL>/oauthSignin
     iframe URL: <MY_APP_URL>/oauthRedirect
-    
-Example:
-[URL to my screenshot]
 
 Onshape will register the app on Partner server and send back the OAUTH Secret which are required for the next step.
 
