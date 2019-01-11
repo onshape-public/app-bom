@@ -20,8 +20,8 @@ if (process.env.OAUTH_URL) {
   oauthUrl = process.env.OAUTH_URL;
 }
 
-if (process.env.API_URL) {
-  apiUrl = process.env.API_URL;
+if (process.env.ONSHAPE_URL) {
+  apiUrl = process.env.ONSHAPE_URL;
 }
 
 if (process.env.OAUTH_CALLBACK_URL) {
