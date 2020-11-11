@@ -1,7 +1,7 @@
 #**app-bom**
 Sample app for Bill of Materials
 
-BOM is an node.js application demonstrating assembly navigation, metadata retrieval and shaded view generation with use of set of rich primary APIs provided by Onshape that allows Partners to interact with Onshape fully cloud based CAD system.
+BOM is a node.js application demonstrating assembly navigation, metadata retrieval and shaded view generation with use of set of rich primary APIs provided by Onshape that allows Partners to interact with Onshape fully cloud based CAD system.
 
 ### **Using BOM**
 This app requires to be run in a tab of Onshape, an iFrame. In this type of configuration, Onshape will pass documentId, workspaceId and elementId as query params to the frame. These are utilized by the BOM app to give it context of what the active document is within Onshape.
@@ -19,7 +19,7 @@ Execute the following commands to create a duplicate of a repository; you need t
        # make a bare clone of the repository
 
     $ cd app-bom.git
-    $ git push --mirror https://github.com/exampleuser/new-respository.git
+    $ git push --mirror https://github.com/<exampleuser>/new-respository.git
        # mirror-push to new respository
 
     $ cd ..
@@ -28,7 +28,7 @@ Execute the following commands to create a duplicate of a repository; you need t
 
 ##### Deploy your repo on heroku
 
-    $ git clone https://github.com/exampleuser/new-respository.git
+    $ git clone https://github.com/<exampleuser>/new-respository.git
     $ cd new-repository
     $ heroku create
 
@@ -52,7 +52,7 @@ Make changes to code at two places for the new URL that Heroku has produced, as 
        ........
        "repository": {
        "type": "git",
-       "url": "https://newURL-from-heroku.herokuapp.com/"
+       "url": "https://<newURL-from-heroku>.herokuapp.com/"
        },
        ...........
 
@@ -64,7 +64,7 @@ Make changes to code at two places for the new URL that Heroku has produced, as 
        passport.use(new OnshapeStrategy({
          clientID: oauthClientId,
          clientSecret: oauthClientSecret,
-         callbackURL: "https://newURL-from-heroku.herokuapp.com/oauthRedirect",
+         callbackURL: "https://<newURL-from-heroku>.herokuapp.com/oauthRedirect",
          .............
        },
        function(accessToken, refreshToken, profile, done) {
@@ -86,7 +86,7 @@ You will need to set the ID and Secret as environment variables on the server. T
 
 You will also need to register your server host, the stack url (for example ONSHAPE_PLATFORM=https://cad.onshape.com), and the Onshape authentication URL.
 
-    $ heroku config:set ONSHAPE_HOST=https://newURL-from-heroku.herokuapp.com
+    $ heroku config:set ONSHAPE_HOST=https://<newURL-from-heroku>.herokuapp.com
     $ heroku config:set ONSHAPE_PLATFORM=https://STACK.onshape.com
     $ heroku config:set ONSHAPE_OAUTH_SERVICE=https://oauth.onshape.com
 
@@ -97,7 +97,7 @@ You can verify that they are set by calling this:
 Other required environment variables that must be set include:
 
     ONSHAPE_PLATFORM: should be "https://cad.onshape.com"
-    ONSHAPE_HOST: should be your hostname from Heroku, e.g. "https://newURL-from-heroku.herokuapp.com"
+    ONSHAPE_HOST: should be your hostname from Heroku, e.g. "https://<newURL-from-heroku>.herokuapp.com"
     ONSHAPE_OAUTH_SERVICE: should be "https://oauth.onshape.com"
 
 One more step before you can use this app sample with Onshape. It requires RedisTOGO.
@@ -117,7 +117,14 @@ the required Redis service.
 
 #### **Creating the App and Store Entry**
 
-To create the new app, you will need to use the [Developer Portal](https://dev-portal.onshape.com) to create an OAuth app (You will need to provide a domain name for the service hosting your containers) and then create a Store Entry, which will not be visible to the public.  You will then need to subscribe to the app through the [App Store](https://appstore.onshape.com) in order to add it to your documents.  See the Developer Portal [documentation](https://dev-portal.onshape.com/help) for more information.
+To create the new app, you will need to use the [Developer Portal](https://dev-portal.onshape.com) to create an OAuth app (You will need to provide a domain name for the service hosting your containers). To specify a tab-based extension, click on the “Extensions” tab and “Add Extension”.
+
+    - Name: `<Enter extension name>`
+	- Description(Optional): `<Enter extension description>`
+	- Location: `Element Tab`
+	- Action URL: `https://<newURL-from-heroku.herokuapp.com>` 
+	- Icon(Optional): `<Drop an image to upload>`
+Then create a Store Entry, which will not be visible to the public.  You will then need to subscribe to the app through the [App Store](https://appstore.onshape.com) in order to add it to your documents.  See the Developer Portal [documentation](https://dev-portal.onshape.com/help) for more information.
 
 #### **Set required environment variables when building or deploying containers**
 The OAuth app must contain reachable SSL URLs for the deployed container and you must set the OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET environment
