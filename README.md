@@ -52,7 +52,7 @@ Make changes to code at two places for the new URL that Heroku has produced, as 
        ........
        "repository": {
        "type": "git",
-       "url": "https://<newURL-from-heroku>.herokuapp.com/“
+       "url": "https://<newURL-from-heroku>.herokuapp.com/"
        },
        ...........
 
